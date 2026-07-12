@@ -24,9 +24,10 @@ import {
   Smile,
   Terminal,
   Flame,
-  Image as ImageIcon,
+  ImageIcon,
   FileText,
   Download,
+  Video,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -37,6 +38,7 @@ import ReasoningSteps, { Step } from "@/components/ReasoningSteps";
 import ChatActions from "@/components/ChatActions";
 import DocumentPreview from "@/components/DocumentPreview";
 import GeneratedImage from "@/components/GeneratedImage";
+import GeneratedVideo from "@/components/GeneratedVideo";
 import { showSuccess, showError } from "@/utils/toast";
 
 type Personality = "autonomous" | "sarcastic" | "cyberpunk" | "hype";
@@ -48,6 +50,7 @@ interface Message {
   image?: string;
   document?: { name: string; size: string };
   generatedImage?: string;
+  generatedVideo?: string;
   timestamp: Date;
   steps?: Step[];
   products?: any[];
@@ -56,7 +59,7 @@ interface Message {
 
 const DEFAULT_PROMPTS = [
   { text: "Order me the cheapest pepperoni pizza.", icon: "🍕" },
-  { text: "Book me a haircut tomorrow after 5 PM.", icon: "✂️" },
+  { text: "Generate a video of a futuristic neon highway.", icon: "🎬" },
   { text: "Summarize my unread messages.", icon: "💬" },
   { text: "Generate an image of a futuristic cyberpunk city.", icon: "🎨" },
   { text: "Plan my trip to Dubai for under $500.", icon: "✈️" },
@@ -145,6 +148,19 @@ const Index = () => {
   };
 
   const getPersonalityResponse = (category: string, userText: string): string => {
+    if (category === "video_generation") {
+      switch (personality) {
+        case "sarcastic":
+          return "I generated that video for you. It's a masterpiece of motion design, though I doubt your human eyes can fully appreciate the frame interpolation. Enjoy your moving pixels.";
+        case "cyberpunk":
+          return "Motion matrix synthesized. Temporal frame interpolation complete. High-fidelity video stream injected into your local deck.";
+        case "hype":
+          return "BOOM! 🎬🔥 THAT VIDEO IS ABSOLUTELY MIND-BLOWING! I fired up all my GPU cores to render this cinematic masterpiece just for you! Check it out! 🚀";
+        default:
+          return "I have successfully generated the video based on your prompt. The neural motion model has completed rendering at 1080p resolution with smooth frame interpolation.";
+      }
+    }
+
     if (category === "image_generation") {
       switch (personality) {
         case "sarcastic":
@@ -254,7 +270,8 @@ const Index = () => {
     stepsList: Step[],
     category: string,
     productsList?: any[],
-    generatedImgUrl?: string
+    generatedImgUrl?: string,
+    generatedVidUrl?: string
   ) => {
     setIsStreaming(true);
     setCurrentSteps(stepsList);
@@ -296,6 +313,7 @@ const Index = () => {
           steps: stepsList,
           products: productsList,
           generatedImage: generatedImgUrl,
+          generatedVideo: generatedVidUrl,
           isStreaming: true,
         };
 
@@ -343,7 +361,23 @@ const Index = () => {
 
     const lowerText = text.toLowerCase();
 
-    if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint")) {
+    if (lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) {
+      // AI Video Generation
+      const generatedVidUrl = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32156-large.mp4";
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Parsing video prompt", status: "pending", log: "Extracting motion vectors, camera angles, and style..." },
+          { id: "2", title: "Initializing video diffusion model", status: "pending", log: "Loading temporal weights and frame buffers..." },
+          { id: "3", title: "Generating keyframes", status: "pending", log: "Synthesizing anchor frames at 24fps..." },
+          { id: "4", title: "Interpolating frames & upscaling", status: "pending", log: "Applying flow-based interpolation to 60fps at 1080p..." },
+        ],
+        "video_generation",
+        undefined,
+        undefined,
+        generatedVidUrl
+      );
+    } else if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint")) {
       // AI Image Generation
       const randomId = Math.floor(Math.random() * 1000);
       const generatedImgUrl = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80&sig=${randomId}`;
@@ -725,6 +759,13 @@ const Index = () => {
                       </div>
                     )}
 
+                    {/* Render Generated Video if present */}
+                    {msg.generatedVideo && (
+                      <div className="w-full max-w-[85%] mt-2">
+                        <GeneratedVideo prompt={msg.text} videoUrl={msg.generatedVideo} />
+                      </div>
+                    )}
+
                     {/* Render steps if present */}
                     {msg.steps && msg.steps.length > 0 && (
                       <div className="w-full max-w-[85%] mt-2">
@@ -847,7 +888,7 @@ const Index = () => {
                   </button>
                   <input
                     type="text"
-                    placeholder="Ask Vertex to automate, analyze files, or generate images..."
+                    placeholder="Ask Vertex to automate, analyze files, or generate images/videos..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
