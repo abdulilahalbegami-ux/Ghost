@@ -21,7 +21,7 @@ import {
   X,
   ShieldAlert,
 } from "lucide-react";
-import GhostLogo from "@/components/GhostLogo";
+import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
 import MemoryManager from "@/components/MemoryManager";
 import TaskPlanner from "@/components/TaskPlanner";
@@ -31,7 +31,7 @@ import { showSuccess, showError } from "@/utils/toast";
 
 interface Message {
   id: string;
-  sender: "user" | "ghost";
+  sender: "user" | "vertex";
   text: string;
   timestamp: Date;
   steps?: Step[];
@@ -52,8 +52,8 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      sender: "ghost",
-      text: "I am Ghost. I don't just chat; I execute. Tell me what you need automated today.",
+      sender: "vertex",
+      text: "I am Vertex. I don't just chat; I execute. Tell me what you need automated today.",
       timestamp: new Date(),
     },
   ]);
@@ -113,7 +113,7 @@ const Index = () => {
 
         const newMessage: Message = {
           id: Date.now().toString(),
-          sender: "ghost",
+          sender: "vertex",
           text: "",
           timestamp: new Date(),
           steps: stepsList,
@@ -246,9 +246,9 @@ const Index = () => {
         <div className="space-y-8">
           {/* Brand Header */}
           <div className="flex items-center gap-3">
-            <GhostLogo size="sm" />
+            <VertexLogo size="sm" />
             <div>
-              <h1 className="text-xl font-bold tracking-widest uppercase">Ghost</h1>
+              <h1 className="text-xl font-bold tracking-widest uppercase">Vertex</h1>
               <p className="text-[10px] text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
             </div>
           </div>
@@ -329,7 +329,7 @@ const Index = () => {
             </div>
           </div>
           <button
-            onClick={() => showSuccess("Logged out of Ghost OS.")}
+            onClick={() => showSuccess("Logged out of Vertex OS.")}
             className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
@@ -343,7 +343,7 @@ const Index = () => {
         <div className="h-14 border-b border-white/10 px-6 flex items-center justify-between bg-zinc-950/50 backdrop-blur-md z-10">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono tracking-wider text-white/60 uppercase">Ghost Core: Online</span>
+            <span className="text-xs font-mono tracking-wider text-white/60 uppercase">Vertex Core: Online</span>
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -444,7 +444,7 @@ const Index = () => {
               <div className="relative flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 focus-within:border-white/30 transition-all">
                 <input
                   type="text"
-                  placeholder="Ask Ghost to automate a task..."
+                  placeholder="Ask Vertex to automate a task..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
@@ -475,7 +475,7 @@ const Index = () => {
               <div className="text-center space-y-3">
                 <h2 className="text-2xl font-bold tracking-widest uppercase">Voice Interface</h2>
                 <p className="text-sm text-white/60">
-                  {isListening ? "Ghost is listening to your command..." : "Tap the core to begin speaking"}
+                  {isListening ? "Vertex is listening to your command..." : "Tap the core to begin speaking"}
                 </p>
               </div>
 
@@ -484,7 +484,7 @@ const Index = () => {
                 className="relative group flex items-center justify-center"
               >
                 <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500" />
-                <GhostLogo size="lg" />
+                <VertexLogo size="lg" />
               </button>
 
               <div className="w-full">
@@ -515,7 +515,7 @@ const Index = () => {
             <div className="max-w-2xl mx-auto space-y-8 text-white">
               <div className="border-b border-white/10 pb-4">
                 <h2 className="text-lg font-semibold tracking-wider uppercase">System Settings</h2>
-                <p className="text-xs text-white/40">Configure your autonomous Ghost OS environment</p>
+                <p className="text-xs text-white/40">Configure your autonomous Vertex OS environment</p>
               </div>
 
               <div className="space-y-6">
@@ -535,7 +535,7 @@ const Index = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">Web Browsing Agent</p>
-                        <p className="text-xs text-white/40">Allows Ghost to search and compare prices</p>
+                        <p className="text-xs text-white/40">Allows Vertex to search and compare prices</p>
                       </div>
                       <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-semibold uppercase tracking-wider">
                         Active

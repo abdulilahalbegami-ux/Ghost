@@ -21,7 +21,7 @@ export const ProductComparer = ({ products, onSelect }: ProductComparerProps) =>
   return (
     <div className="space-y-4 bg-white/5 p-4 rounded-2xl border border-white/10 text-white">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-white/60">Ghost Price Comparison</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-white/60">Vertex Price Comparison</h4>
         <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/80">3 Sources Scanned</span>
       </div>
 

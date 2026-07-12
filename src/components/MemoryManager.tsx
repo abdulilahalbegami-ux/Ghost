@@ -35,7 +35,7 @@ export const MemoryManager = () => {
     setMemories([newMemory, ...memories]);
     setNewCategory("");
     setNewContent("");
-    showSuccess("Ghost updated its memory core.");
+    showSuccess("Vertex updated its memory core.");
   };
 
   const handleDeleteMemory = (id: string) => {
@@ -48,7 +48,7 @@ export const MemoryManager = () => {
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-white animate-pulse" />
-          <h2 className="text-lg font-semibold tracking-wider uppercase">Ghost Memory Core</h2>
+          <h2 className="text-lg font-semibold tracking-wider uppercase">Vertex Memory Core</h2>
         </div>
         <button
           onClick={() => {
@@ -68,7 +68,7 @@ export const MemoryManager = () => {
 
       {/* Add Memory Form */}
       <form onSubmit={handleAddMemory} className="space-y-3 bg-white/5 p-4 rounded-xl border border-white/10">
-        <p className="text-xs text-white/60 uppercase tracking-wider">Teach Ghost something new</p>
+        <p className="text-xs text-white/60 uppercase tracking-wider">Teach Vertex something new</p>
         <div className="grid grid-cols-3 gap-2">
           <input
             type="text"
@@ -79,7 +79,7 @@ export const MemoryManager = () => {
           />
           <input
             type="text"
-            placeholder="What should Ghost remember?"
+            placeholder="What should Vertex remember?"
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
             className="col-span-2 bg-black border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white"

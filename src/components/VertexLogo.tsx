@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export const GhostLogo = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
+export const VertexLogo = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
   const dimensions = {
     sm: "w-12 h-12",
     md: "w-24 h-24",
@@ -35,4 +35,4 @@ export const GhostLogo = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
   );
 };
 
-export default GhostLogo;
+export default VertexLogo;

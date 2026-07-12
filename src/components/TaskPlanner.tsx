@@ -52,7 +52,7 @@ export const TaskPlanner = () => {
       setTasks(
         tasks.map((t) =>
           t.id === id
-            ? { ...t, status: "completed", details: "Task successfully completed by Ghost AI." }
+            ? { ...t, status: "completed", details: "Task successfully completed by Vertex AI." }
             : t
         )
       );
