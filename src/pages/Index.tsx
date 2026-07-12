@@ -11,6 +11,7 @@ import {
   Sparkles,
   User,
   LogOut,
+  LogIn,
   Volume2,
   VolumeX,
   ArrowRight,
@@ -69,6 +70,13 @@ const DEFAULT_PROMPTS = [
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
   
+  // --- Authentication State ---
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Default to Guest Mode
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+
   // Custom personality state defined by the user
   const [customPersonality, setCustomPersonality] = useState<string>(
     "An efficient, professional autonomous AI assistant who is highly capable and concise."
@@ -170,6 +178,12 @@ const Index = () => {
 
   const handleSavePersonality = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Please sign in to customize Vertex's personality core.");
+      return;
+    }
     if (!personalityInput.trim()) {
       showError("Personality description cannot be empty.");
       return;
@@ -215,6 +229,12 @@ const Index = () => {
   };
 
   const handleExportChat = () => {
+    if (!isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Please sign in to export your chat history.");
+      return;
+    }
     try {
       const chatData = JSON.stringify(messages, null, 2);
       const blob = new Blob([chatData], { type: "application/json" });
@@ -233,7 +253,7 @@ const Index = () => {
 
   // Dynamically adapt responses based on the user's custom personality description
   const getPersonalityResponse = (category: string, userText: string): string => {
-    const desc = customPersonality.toLowerCase();
+    const desc = isLoggedIn ? customPersonality.toLowerCase() : "An efficient, professional autonomous AI assistant who is highly capable and concise.".toLowerCase();
 
     // Helper to apply stylistic flavor based on custom personality keywords
     const applyFlavor = (baseText: string): string => {
@@ -377,6 +397,16 @@ const Index = () => {
   const handleSendMessage = (text: string) => {
     if ((!text.trim() && !selectedImage && !selectedDoc) || isStreaming) return;
 
+    const lowerText = text.toLowerCase();
+
+    // Exclusive Feature Check: Video Generation
+    if ((lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) && !isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Video generation is exclusive to registered operators. Please sign in.");
+      return;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
@@ -390,8 +420,6 @@ const Index = () => {
     setInputText("");
     setSelectedImage(null);
     setSelectedDoc(null);
-
-    const lowerText = text.toLowerCase();
 
     if (lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) {
       const generatedVidUrl = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32156-large.mp4";
@@ -526,6 +554,18 @@ const Index = () => {
     }
   };
 
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail || !authPassword) {
+      showError("Please fill in all fields.");
+      return;
+    }
+    setIsLoggedIn(true);
+    setShowAuthModal(false);
+    setUsername(authEmail.split("@")[0] || "Agent Alpha");
+    showSuccess(authMode === "signin" ? "Welcome back to Vertex OS!" : "Account created successfully!");
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
       
@@ -542,13 +582,25 @@ const Index = () => {
           </div>
 
           {/* Active Personality Status */}
-          <div className="bg-white/5 p-3.5 rounded-2xl border border-white/10 space-y-1.5">
+          <div className="bg-white/5 p-3.5 rounded-2xl border border-white/10 space-y-1.5 relative overflow-hidden">
+            {!isLoggedIn && (
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center z-10">
+                <Lock className="w-4 h-4 text-white/60 mb-1" />
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/80">Custom Personality</p>
+                <button
+                  onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+                  className="text-[8px] text-white underline hover:text-white/80 mt-0.5"
+                >
+                  Sign in to unlock
+                </button>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
               <Sparkle className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
               <span>Active Personality</span>
             </div>
             <p className="text-xs text-white/80 italic line-clamp-2">
-              "{customPersonality}"
+              "{isLoggedIn ? customPersonality : "Default Professional Core"}"
             </p>
           </div>
 
@@ -623,16 +675,27 @@ const Index = () => {
               <User className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold">{username}</p>
-              <p className="text-xs text-white/40">Premium Operator</p>
+              <p className="text-sm font-semibold">{isLoggedIn ? username : "Guest Operator"}</p>
+              <p className="text-xs text-white/40">{isLoggedIn ? "Premium Operator" : "Free Tier"}</p>
             </div>
           </div>
-          <button
-            onClick={() => showSuccess("Logged out of Vertex OS.")}
-            className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          {isLoggedIn ? (
+            <button
+              onClick={() => { setIsLoggedIn(false); showSuccess("Logged out of Vertex OS."); }}
+              title="Sign Out"
+              className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+              title="Sign In"
+              className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -663,10 +726,11 @@ const Index = () => {
               <button
                 onClick={handleExportChat}
                 title="Export Chat History"
-                className="text-xs font-mono text-white/60 hover:text-white flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 transition-all"
+                className="text-xs font-mono text-white/60 hover:text-white flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 transition-all relative"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export</span>
+                {!isLoggedIn && <Lock className="w-2.5 h-2.5 text-amber-400 absolute -top-1 -right-1" />}
               </button>
               <button
                 onClick={() => setIsVoiceMuted(!isVoiceMuted)}
@@ -781,7 +845,7 @@ const Index = () => {
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(prompt.text)}
-                        className="flex items-center justify-between p-3.5 bg-zinc-950 hover:bg-white/5 border border-white/10 hover:border-white/30 rounded-xl text-left transition-all group"
+                        className="flex items-center justify-between p-3.5 bg-zinc-950 hover:bg-white/5 border border-white/10 hover:border-white/30 rounded-xl text-left transition-all group relative"
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="text-base">{prompt.icon}</span>
@@ -789,7 +853,14 @@ const Index = () => {
                             {prompt.text}
                           </span>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        <div className="flex items-center gap-1.5">
+                          {prompt.text.includes("video") && !isLoggedIn && (
+                            <span className="flex items-center gap-1 text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                              <Lock className="w-2.5 h-2.5" /> Premium
+                            </span>
+                          )}
+                          <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -828,7 +899,22 @@ const Index = () => {
           )}
 
           {activeTab === "memory" && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto relative">
+              {!isLoggedIn && (
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10 rounded-2xl border border-white/10">
+                  <Lock className="w-8 h-8 text-amber-400 mb-3 animate-bounce" />
+                  <h3 className="text-lg font-bold uppercase tracking-wider">Autonomous Memory Core</h3>
+                  <p className="text-xs text-white/60 max-w-sm mt-1.5 mb-4">
+                    Vertex's persistent memory core is exclusive to registered operators. Sign in to let Vertex remember your preferences across sessions.
+                  </p>
+                  <button
+                    onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+                    className="bg-white text-black hover:bg-white/90 font-semibold px-5 py-2 rounded-xl text-xs transition-all"
+                  >
+                    Sign In / Create Account
+                  </button>
+                </div>
+              )}
               <MemoryManager />
             </div>
           )}
@@ -846,6 +932,26 @@ const Index = () => {
                 <p className="text-xs text-white/40">Configure your autonomous Vertex OS environment</p>
               </div>
 
+              {/* Guest Mode Sign In Prompt */}
+              {!isLoggedIn && (
+                <div className="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-amber-400 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4" /> Unlock Premium Features
+                    </h3>
+                    <p className="text-xs text-white/70">
+                      Sign in to unlock Custom Personality, Persistent Memory, Video Generation, and Chat Exporting.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+                    className="bg-white text-black hover:bg-white/90 font-semibold px-4 py-2 rounded-xl text-xs transition-all shrink-0"
+                  >
+                    Sign In Now
+                  </button>
+                </div>
+              )}
+
               {/* 👤 Account Section */}
               <div className="space-y-3 bg-white/5 p-5 rounded-2xl border border-white/10">
                 <div className="flex items-center gap-2 border-b border-white/10 pb-2.5">
@@ -854,86 +960,109 @@ const Index = () => {
                 </div>
                 
                 <div className="space-y-4 pt-2">
-                  {/* Profile / Username */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs font-semibold">Profile Username</p>
-                      <p className="text-[10px] text-white/40">Your operator identity across Vertex OS</p>
-                    </div>
-                    {isEditingProfile ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value)}
-                          className="bg-black border border-white/20 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-white"
-                        />
-                        <button
-                          onClick={() => {
-                            setUsername(newUsername);
-                            setIsEditingProfile(false);
-                            showSuccess("Username updated successfully.");
-                          }}
-                          className="p-1.5 bg-white text-black rounded-lg hover:bg-white/90 transition-all"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
+                  {isLoggedIn ? (
+                    <>
+                      {/* Profile / Username */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-semibold">Profile Username</p>
+                          <p className="text-[10px] text-white/40">Your operator identity across Vertex OS</p>
+                        </div>
+                        {isEditingProfile ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={newUsername}
+                              onChange={(e) => setNewUsername(e.target.value)}
+                              className="bg-black border border-white/20 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-white"
+                            />
+                            <button
+                              onClick={() => {
+                                setUsername(newUsername);
+                                setIsEditingProfile(false);
+                                showSuccess("Username updated successfully.");
+                              }}
+                              className="p-1.5 bg-white text-black rounded-lg hover:bg-white/90 transition-all"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-mono text-white/80">{username}</span>
+                            <button
+                              onClick={() => {
+                                setNewUsername(username);
+                                setIsEditingProfile(true);
+                              }}
+                              className="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg transition-all"
+                            >
+                              Change
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-white/80">{username}</span>
+
+                      {/* Change Password */}
+                      <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                        <div>
+                          <p className="text-xs font-semibold">Change Password</p>
+                          <p className="text-[10px] text-white/40">Update your security credentials</p>
+                        </div>
                         <button
                           onClick={() => {
-                            setNewUsername(username);
-                            setIsEditingProfile(true);
+                            const newPass = prompt("Enter new password:");
+                            if (newPass) {
+                              setPassword("••••••••••••");
+                              showSuccess("Password updated successfully.");
+                            }
                           }}
                           className="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg transition-all"
                         >
-                          Change
+                          Update
                         </button>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Change Password */}
-                  <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Change Password</p>
-                      <p className="text-[10px] text-white/40">Update your security credentials</p>
+                      {/* Delete Account & Sign Out */}
+                      <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                        <button
+                          onClick={() => {
+                            if (confirm("Are you absolutely sure you want to delete your Vertex account? This action is irreversible.")) {
+                              setIsLoggedIn(false);
+                              showSuccess("Account deleted successfully.");
+                            }
+                          }}
+                          className="text-[10px] text-red-400 hover:text-red-300 flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete Account
+                        </button>
+                        <button
+                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Vertex OS."); }}
+                          className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
+                        >
+                          <LogOut className="w-3.5 h-3.5" /> Sign Out
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-4 space-y-3">
+                      <p className="text-xs text-white/60">You are currently operating in Guest Mode.</p>
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+                          className="bg-white text-black hover:bg-white/90 font-semibold px-4 py-1.5 rounded-lg text-xs transition-all"
+                        >
+                          Sign In
+                        </button>
+                        <button
+                          onClick={() => { setAuthMode("signup"); setShowAuthModal(true); }}
+                          className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-1.5 rounded-lg text-xs transition-all"
+                        >
+                          Create Account
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        const newPass = prompt("Enter new password:");
-                        if (newPass) {
-                          setPassword("••••••••••••");
-                          showSuccess("Password updated successfully.");
-                        }
-                      }}
-                      className="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg transition-all"
-                    >
-                      Update
-                    </button>
-                  </div>
-
-                  {/* Delete Account & Sign Out */}
-                  <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                    <button
-                      onClick={() => {
-                        if (confirm("Are you absolutely sure you want to delete your Vertex account? This action is irreversible.")) {
-                          showSuccess("Account deleted successfully.");
-                        }
-                      }}
-                      className="text-[10px] text-red-400 hover:text-red-300 flex items-center gap-1.5"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete Account
-                    </button>
-                    <button
-                      onClick={() => showSuccess("Signed out of Vertex OS.")}
-                      className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
-                    >
-                      <LogOut className="w-3.5 h-3.5" /> Sign Out
-                    </button>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -946,7 +1075,16 @@ const Index = () => {
 
                 <div className="space-y-4 pt-2">
                   {/* Custom Personality Core */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
+                    {!isLoggedIn && (
+                      <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center z-10 rounded-xl">
+                        <Lock className="w-5 h-5 text-amber-400 mb-1.5" />
+                        <p className="text-xs font-bold uppercase tracking-wider">Custom Personality Core</p>
+                        <p className="text-[10px] text-white/60 max-w-xs mt-0.5">
+                          Sign in to customize Vertex's behavior, tone, and response style.
+                        </p>
+                      </div>
+                    )}
                     <p className="text-xs font-semibold">Custom Personality Core</p>
                     <p className="text-[10px] text-white/40">Explain exactly how you want Vertex to behave, speak, and respond.</p>
                     <form onSubmit={handleSavePersonality} className="space-y-2">
@@ -1077,7 +1215,13 @@ const Index = () => {
                   </div>
 
                   {/* Memory Toggle */}
-                  <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                  <div className="flex items-center justify-between border-t border-white/5 pt-3 relative">
+                    {!isLoggedIn && (
+                      <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Memory Core (Premium)</span>
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs font-semibold">Autonomous Memory Core</p>
                       <p className="text-[10px] text-white/40">Allow Vertex to remember facts across sessions</p>
@@ -1263,7 +1407,13 @@ const Index = () => {
                   </div>
 
                   {/* Export Chats */}
-                  <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                  <div className="flex items-center justify-between border-t border-white/5 pt-3 relative">
+                    {!isLoggedIn && (
+                      <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Export Chats (Premium)</span>
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs font-semibold">Export Chats</p>
                       <p className="text-[10px] text-white/40">Download your chat history as a JSON file</p>
@@ -1629,6 +1779,73 @@ const Index = () => {
         </div>
 
       </div>
+
+      {/* --- Beautiful Interactive Auth Modal --- */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-zinc-950 border border-white/10 rounded-2xl p-6 max-w-sm w-full space-y-4 relative">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="text-center space-y-1">
+              <VertexLogo size="sm" />
+              <h3 className="text-base font-bold uppercase tracking-wider mt-2">
+                {authMode === "signin" ? "Sign In to Vertex OS" : "Create Free Account"}
+              </h3>
+              <p className="text-[10px] text-white/40">
+                Unlock persistent memory, custom personalities, and video generation.
+              </p>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="operator@vertex.ai"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">Password</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-white text-black hover:bg-white/90 font-bold py-2 rounded-xl text-xs transition-all"
+              >
+                {authMode === "signin" ? "Sign In" : "Create Account"}
+              </button>
+            </form>
+
+            <div className="text-center">
+              <button
+                onClick={() => setAuthMode(authMode === "signin" ? "signup" : "signin")}
+                className="text-[10px] text-white/60 hover:text-white underline transition-colors"
+              >
+                {authMode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
