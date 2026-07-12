@@ -166,6 +166,23 @@ const Index = () => {
     }
   };
 
+  const handleExportChat = () => {
+    try {
+      const chatData = JSON.stringify(messages, null, 2);
+      const blob = new Blob([chatData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `vertex-chat-export-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showSuccess("Chat history exported successfully!");
+    } catch (err) {
+      showError("Failed to export chat history.");
+    }
+  };
+
   // Dynamically adapt responses based on the user's custom personality description
   const getPersonalityResponse = (category: string, userText: string): string => {
     const desc = customPersonality.toLowerCase();
@@ -433,6 +450,31 @@ const Index = () => {
         ],
         "default"
       );
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      showSuccess("Voice mode deactivated.");
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+      } else {
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+        setTimeout(() => {
+          if (isListening) {
+            setIsListening(false);
+            handleSendMessage("Order me the cheapest pepperoni pizza.");
+          }
+        }, 2000);
+      }
     }
   };
 
