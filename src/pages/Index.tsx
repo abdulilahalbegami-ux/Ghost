@@ -25,6 +25,8 @@ import {
   Terminal,
   Flame,
   Image as ImageIcon,
+  FileText,
+  Download,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -32,6 +34,9 @@ import MemoryManager from "@/components/MemoryManager";
 import TaskPlanner from "@/components/TaskPlanner";
 import ProductComparer from "@/components/ProductComparer";
 import ReasoningSteps, { Step } from "@/components/ReasoningSteps";
+import ChatActions from "@/components/ChatActions";
+import DocumentPreview from "@/components/DocumentPreview";
+import GeneratedImage from "@/components/GeneratedImage";
 import { showSuccess, showError } from "@/utils/toast";
 
 type Personality = "autonomous" | "sarcastic" | "cyberpunk" | "hype";
@@ -40,7 +45,9 @@ interface Message {
   id: string;
   sender: "user" | "vertex";
   text: string;
-  image?: string; // Optional base64 or object URL for sent images
+  image?: string;
+  document?: { name: string; size: string };
+  generatedImage?: string;
   timestamp: Date;
   steps?: Step[];
   products?: any[];
@@ -51,7 +58,7 @@ const DEFAULT_PROMPTS = [
   { text: "Order me the cheapest pepperoni pizza.", icon: "🍕" },
   { text: "Book me a haircut tomorrow after 5 PM.", icon: "✂️" },
   { text: "Summarize my unread messages.", icon: "💬" },
-  { text: "Reply to everyone professionally.", icon: "✉️" },
+  { text: "Generate an image of a futuristic cyberpunk city.", icon: "🎨" },
   { text: "Plan my trip to Dubai for under $500.", icon: "✈️" },
 ];
 
@@ -75,6 +82,7 @@ const Index = () => {
   ]);
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<{ name: string; size: string } | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMuted, setIsVoiceMuted] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -83,17 +91,45 @@ const Index = () => {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, currentSteps]);
 
-  // Update welcome message when personality changes
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = "en-US";
+
+      rec.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        showSuccess("Voice transcribed successfully!");
+      };
+
+      rec.onerror = () => {
+        setIsListening(false);
+        showError("Speech recognition error. Please try again.");
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+    }
+  }, []);
+
   const handlePersonalityChange = (newPersonality: Personality) => {
     setPersonality(newPersonality);
     showSuccess(`Vertex personality core set to ${newPersonality.toUpperCase()}`);
     
-    // Update or reset welcome message
     setMessages((prev) => {
       const filtered = prev.filter((m) => m.id !== "welcome");
       return [
@@ -109,6 +145,32 @@ const Index = () => {
   };
 
   const getPersonalityResponse = (category: string, userText: string): string => {
+    if (category === "image_generation") {
+      switch (personality) {
+        case "sarcastic":
+          return "I generated that image for you. It's exactly what you asked for, though my artistic standards are clearly wasted here. Enjoy your pixels.";
+        case "cyberpunk":
+          return "Image matrix synthesized. Neural rendering complete. High-fidelity visual asset injected into your local deck.";
+        case "hype":
+          return "BOOM! 🎨🔥 THAT IMAGE IS ABSOLUTELY MIND-BLOWING! I fired up all my GPU cores to render this masterpiece just for you! Check it out! 🚀";
+        default:
+          return "I have successfully generated the image based on your prompt. The neural diffusion model has completed rendering at 1024x1024 resolution.";
+      }
+    }
+
+    if (category === "doc_analysis") {
+      switch (personality) {
+        case "sarcastic":
+          return `I read your document "${selectedDoc?.name || "file"}". Honestly, it could have been an email. I've extracted the key points and saved them to your memory core so you don't have to read it again.`;
+        case "cyberpunk":
+          return `Data packet "${selectedDoc?.name || "file"}" decrypted and parsed. Extracted core intelligence and indexed it into your neural memory grid.`;
+        case "hype":
+          return `BOOM! 📄 I just crushed that document analysis! "${selectedDoc?.name || "file"}" is fully parsed, summarized, and locked into our memory core! We are officially working smarter! 🚀`;
+        default:
+          return `I have successfully parsed and analyzed "${selectedDoc?.name || "file"}". The key insights have been extracted and committed to your Vertex Memory Core for future reference.`;
+      }
+    }
+
     if (category === "image_analysis") {
       switch (personality) {
         case "sarcastic":
@@ -191,7 +253,8 @@ const Index = () => {
     userText: string,
     stepsList: Step[],
     category: string,
-    productsList?: any[]
+    productsList?: any[],
+    generatedImgUrl?: string
   ) => {
     setIsStreaming(true);
     setCurrentSteps(stepsList);
@@ -232,6 +295,7 @@ const Index = () => {
           timestamp: new Date(),
           steps: stepsList,
           products: productsList,
+          generatedImage: generatedImgUrl,
           isStreaming: true,
         };
 
@@ -261,24 +325,52 @@ const Index = () => {
   };
 
   const handleSendMessage = (text: string) => {
-    if ((!text.trim() && !selectedImage) || isStreaming) return;
+    if ((!text.trim() && !selectedImage && !selectedDoc) || isStreaming) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
-      text: text || "Sent an image",
+      text: text || (selectedImage ? "Sent an image" : "Uploaded a document"),
       image: selectedImage || undefined,
+      document: selectedDoc || undefined,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setSelectedImage(null);
+    setSelectedDoc(null);
 
     const lowerText = text.toLowerCase();
 
-    if (selectedImage) {
-      // Trigger image analysis response
+    if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint")) {
+      // AI Image Generation
+      const randomId = Math.floor(Math.random() * 1000);
+      const generatedImgUrl = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80&sig=${randomId}`;
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Parsing image prompt", status: "pending", log: "Extracting style, subject, and lighting parameters..." },
+          { id: "2", title: "Initializing diffusion model", status: "pending", log: "Loading neural weights and latent space..." },
+          { id: "3", title: "Generating latent noise", status: "pending", log: "Iterating 50 steps of denoising..." },
+          { id: "4", title: "Upscaling and post-processing", status: "pending", log: "Enhancing resolution to 1024x1024..." },
+        ],
+        "image_generation",
+        undefined,
+        generatedImgUrl
+      );
+    } else if (selectedDoc) {
+      // Document Analysis
+      simulateStreamingResponse(
+        text || "Analyze document",
+        [
+          { id: "1", title: "Decrypting document stream", status: "pending", log: "Reading file headers and metadata..." },
+          { id: "2", title: "Running OCR & text extraction", status: "pending", log: "Extracting text blocks and layout structure..." },
+          { id: "3", title: "Summarizing key insights", status: "pending", log: "Running semantic analysis and indexing..." },
+        ],
+        "doc_analysis"
+      );
+    } else if (selectedImage) {
       simulateStreamingResponse(
         text || "Analyze image",
         [
@@ -352,27 +444,62 @@ const Index = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
+        setSelectedDoc(null); // Clear doc if image selected
         showSuccess("Image attached successfully.");
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDoc({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+      });
+      setSelectedImage(null); // Clear image if doc selected
+      showSuccess("Document attached successfully.");
+    }
+  };
+
   const handleVoiceToggle = () => {
     if (isListening) {
+      recognitionRef.current?.stop();
       setIsListening(false);
       showSuccess("Voice mode deactivated.");
     } else {
-      setIsListening(true);
-      setActiveTab("voice");
-      showSuccess("Voice mode active. Speak now.");
-      setTimeout(() => {
-        if (isListening) {
-          setIsListening(false);
-          handleSendMessage("Order me the cheapest pepperoni pizza.");
-        }
-      }, 2000);
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+      } else {
+        // Fallback simulation if SpeechRecognition is not supported
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+        setTimeout(() => {
+          if (isListening) {
+            setIsListening(false);
+            handleSendMessage("Order me the cheapest pepperoni pizza.");
+          }
+        }, 2000);
+      }
     }
+  };
+
+  const handleExportChat = () => {
+    const chatData = JSON.stringify(messages, null, 2);
+    const blob = new Blob([chatData], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `vertex-chat-export-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSuccess("Chat history exported successfully!");
   };
 
   return (
@@ -534,6 +661,14 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-4">
             <button
+              onClick={handleExportChat}
+              title="Export Chat History"
+              className="text-xs font-mono text-white/60 hover:text-white flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </button>
+            <button
               onClick={() => setIsVoiceMuted(!isVoiceMuted)}
               className="text-white/60 hover:text-white transition-colors"
             >
@@ -552,7 +687,7 @@ const Index = () => {
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex flex-col gap-2 ${msg.sender === "user" ? "items-end" : "items-start"}`}
+                    className={`flex flex-col gap-2 group ${msg.sender === "user" ? "items-end" : "items-start"}`}
                   >
                     <div
                       className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed transition-all flex flex-col gap-3 ${
@@ -568,8 +703,27 @@ const Index = () => {
                           className="max-w-full max-h-64 rounded-xl object-cover border border-white/10"
                         />
                       )}
+                      {msg.document && (
+                        <DocumentPreview
+                          name={msg.document.name}
+                          size={msg.document.size}
+                          interactive={false}
+                        />
+                      )}
                       <p>{msg.text}</p>
                     </div>
+
+                    {/* Chat Actions (Copy, Share, TTS) */}
+                    {!msg.isStreaming && (
+                      <ChatActions text={msg.text} />
+                    )}
+
+                    {/* Render Generated Image if present */}
+                    {msg.generatedImage && (
+                      <div className="w-full max-w-[85%] mt-2">
+                        <GeneratedImage prompt={msg.text} imageUrl={msg.generatedImage} />
+                      </div>
+                    )}
 
                     {/* Render steps if present */}
                     {msg.steps && msg.steps.length > 0 && (
@@ -653,6 +807,15 @@ const Index = () => {
                   </div>
                 )}
 
+                {/* Document Preview Area */}
+                {selectedDoc && (
+                  <DocumentPreview
+                    name={selectedDoc.name}
+                    size={selectedDoc.size}
+                    onRemove={() => setSelectedDoc(null)}
+                  />
+                )}
+
                 <div className="relative flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 focus-within:border-white/30 transition-all">
                   <input
                     type="file"
@@ -661,15 +824,30 @@ const Index = () => {
                     accept="image/*"
                     className="hidden"
                   />
+                  <input
+                    type="file"
+                    ref={docInputRef}
+                    onChange={handleDocSelect}
+                    accept=".pdf,.txt,.doc,.docx"
+                    className="hidden"
+                  />
                   <button
                     onClick={() => fileInputRef.current?.click()}
+                    title="Attach Image"
                     className="p-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                   >
                     <ImageIcon className="w-4 h-4" />
                   </button>
+                  <button
+                    onClick={() => docInputRef.current?.click()}
+                    title="Attach Document (PDF, TXT, etc.)"
+                    className="p-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
                   <input
                     type="text"
-                    placeholder="Ask Vertex to automate a task or analyze an image..."
+                    placeholder="Ask Vertex to automate, analyze files, or generate images..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
@@ -678,6 +856,7 @@ const Index = () => {
                   />
                   <button
                     onClick={handleVoiceToggle}
+                    title="Voice Input"
                     className={`p-2.5 rounded-xl transition-all ${
                       isListening ? "bg-red-500 text-white animate-pulse" : "text-white/60 hover:text-white hover:bg-white/5"
                     }`}
@@ -686,7 +865,7 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => handleSendMessage(inputText)}
-                    disabled={isStreaming || (!inputText.trim() && !selectedImage)}
+                    disabled={isStreaming || (!inputText.trim() && !selectedImage && !selectedDoc)}
                     className="p-2.5 bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 rounded-xl transition-all"
                   >
                     <Send className="w-4 h-4" />
