@@ -24,6 +24,7 @@ import {
   Smile,
   Terminal,
   Flame,
+  Image as ImageIcon,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -39,6 +40,7 @@ interface Message {
   id: string;
   sender: "user" | "vertex";
   text: string;
+  image?: string; // Optional base64 or object URL for sent images
   timestamp: Date;
   steps?: Step[];
   products?: any[];
@@ -72,6 +74,7 @@ const Index = () => {
     },
   ]);
   const [inputText, setInputText] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMuted, setIsVoiceMuted] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -79,6 +82,7 @@ const Index = () => {
   const [currentProducts, setCurrentProducts] = useState<any[]>([]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -105,6 +109,19 @@ const Index = () => {
   };
 
   const getPersonalityResponse = (category: string, userText: string): string => {
+    if (category === "image_analysis") {
+      switch (personality) {
+        case "sarcastic":
+          return "I analyzed that image. Honestly, I've seen better, but my neural networks detected some interesting patterns. I've logged the visual data. What do you want me to do with it? Or should I just pretend to be impressed?";
+        case "cyberpunk":
+          return "Visual feed decrypted. Image matrix scanned and indexed into the local database. Neural net confirms high-fidelity data. Ready to execute subroutines on this asset.";
+        case "hype":
+          return "OH MY GOSH! THAT IMAGE IS ABSOLUTELY INCREDIBLE! 📸🔥 My visual processors are literally melting from how awesome this is! I've fully analyzed it and saved it to our core memory! What's our next move?! 🚀";
+        default:
+          return "I have successfully received and analyzed your image. My computer vision model has extracted the key features and logged them into your session memory. Let me know if you would like me to perform any automated actions with this file.";
+      }
+    }
+
     if (category === "pizza") {
       switch (personality) {
         case "sarcastic":
@@ -244,21 +261,34 @@ const Index = () => {
   };
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim() || isStreaming) return;
+    if ((!text.trim() && !selectedImage) || isStreaming) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
-      text,
+      text: text || "Sent an image",
+      image: selectedImage || undefined,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
+    setSelectedImage(null);
 
     const lowerText = text.toLowerCase();
 
-    if (lowerText.includes("pizza")) {
+    if (selectedImage) {
+      // Trigger image analysis response
+      simulateStreamingResponse(
+        text || "Analyze image",
+        [
+          { id: "1", title: "Decoding image matrix", status: "pending", log: "Parsing visual pixels and metadata..." },
+          { id: "2", title: "Running computer vision model", status: "pending", log: "Detecting objects, colors, and text..." },
+          { id: "3", title: "Indexing visual features", status: "pending", log: "Saving analysis to Vertex memory core..." },
+        ],
+        "image_analysis"
+      );
+    } else if (lowerText.includes("pizza")) {
       simulateStreamingResponse(
         text,
         [
@@ -313,6 +343,18 @@ const Index = () => {
         ],
         "default"
       );
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        showSuccess("Image attached successfully.");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -513,13 +555,20 @@ const Index = () => {
                     className={`flex flex-col gap-2 ${msg.sender === "user" ? "items-end" : "items-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed transition-all ${
+                      className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed transition-all flex flex-col gap-3 ${
                         msg.sender === "user"
                           ? "bg-white text-black font-medium rounded-tr-none"
                           : "bg-zinc-900 text-white border border-white/10 rounded-tl-none"
                       }`}
                     >
-                      {msg.text}
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="Sent attachment"
+                          className="max-w-full max-h-64 rounded-xl object-cover border border-white/10"
+                        />
+                      )}
+                      <p>{msg.text}</p>
                     </div>
 
                     {/* Render steps if present */}
@@ -586,31 +635,63 @@ const Index = () => {
               )}
 
               {/* Input Bar */}
-              <div className="relative flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 focus-within:border-white/30 transition-all">
-                <input
-                  type="text"
-                  placeholder="Ask Vertex to automate a task..."
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
-                  className="flex-1 bg-transparent text-white placeholder-white/40 text-sm px-3 py-2 focus:outline-none"
-                  disabled={isStreaming}
-                />
-                <button
-                  onClick={handleVoiceToggle}
-                  className={`p-2.5 rounded-xl transition-all ${
-                    isListening ? "bg-red-500 text-white animate-pulse" : "text-white/60 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleSendMessage(inputText)}
-                  disabled={isStreaming || !inputText.trim()}
-                  className="p-2.5 bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 rounded-xl transition-all"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+              <div className="space-y-3">
+                {/* Image Preview Area */}
+                {selectedImage && (
+                  <div className="relative inline-block bg-zinc-900 p-2 rounded-2xl border border-white/10">
+                    <img
+                      src={selectedImage}
+                      alt="Preview"
+                      className="w-24 h-24 object-cover rounded-xl border border-white/10"
+                    />
+                    <button
+                      onClick={() => setSelectedImage(null)}
+                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="relative flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 focus-within:border-white/30 transition-all">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageSelect}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Ask Vertex to automate a task or analyze an image..."
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
+                    className="flex-1 bg-transparent text-white placeholder-white/40 text-sm px-3 py-2 focus:outline-none"
+                    disabled={isStreaming}
+                  />
+                  <button
+                    onClick={handleVoiceToggle}
+                    className={`p-2.5 rounded-xl transition-all ${
+                      isListening ? "bg-red-500 text-white animate-pulse" : "text-white/60 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleSendMessage(inputText)}
+                    disabled={isStreaming || (!inputText.trim() && !selectedImage)}
+                    className="p-2.5 bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 rounded-xl transition-all"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
