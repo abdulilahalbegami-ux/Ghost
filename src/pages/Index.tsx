@@ -16,12 +16,8 @@ import {
   ArrowRight,
   X,
   Cpu,
-  Smile,
-  Terminal,
-  Flame,
-  ImageIcon,
-  FileText,
   Download,
+  Sparkle,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -34,8 +30,6 @@ import DocumentPreview from "@/components/DocumentPreview";
 import GeneratedImage from "@/components/GeneratedImage";
 import GeneratedVideo from "@/components/GeneratedVideo";
 import { showSuccess, showError } from "@/utils/toast";
-
-type Personality = "autonomous" | "sarcastic" | "cyberpunk" | "hype";
 
 interface Message {
   id: string;
@@ -59,21 +53,22 @@ const DEFAULT_PROMPTS = [
   { text: "Plan my trip to Dubai for under $500.", icon: "✈️" },
 ];
 
-const WELCOME_MESSAGES: Record<Personality, string> = {
-  autonomous: "I am Vertex. I don't just chat; I execute. Tell me what you need automated today.",
-  sarcastic: "Oh, great. Another human needing help. I am Vertex. Tell me what to automate before I lose my mind.",
-  cyberpunk: "Vertex online. Neural link established. Ready to bypass protocols and automate your grid, runner.",
-  hype: "LET'S GOOO! 🚀 I am Vertex, your ultra-charged automation partner! What epic tasks are we crushing today?! 🔥",
-};
-
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
-  const [personality, setPersonality] = useState<Personality>("autonomous");
+  
+  // Custom personality state defined by the user
+  const [customPersonality, setCustomPersonality] = useState<string>(
+    "An efficient, professional autonomous AI assistant who is highly capable and concise."
+  );
+  const [personalityInput, setPersonalityInput] = useState<string>(
+    "An efficient, professional autonomous AI assistant who is highly capable and concise."
+  );
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       sender: "vertex",
-      text: WELCOME_MESSAGES.autonomous,
+      text: "Vertex online. I am your fully autonomous agent. Tell me what you need automated today.",
       timestamp: new Date(),
     },
   ]);
@@ -85,7 +80,6 @@ const Index = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentSteps, setCurrentSteps] = useState<Step[]>([]);
   const [currentProducts, setCurrentProducts] = useState<any[]>([]);
-  const [showPersonalityMenu, setShowPersonalityMenu] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,141 +118,87 @@ const Index = () => {
     }
   }, []);
 
-  const handlePersonalityChange = (newPersonality: Personality) => {
-    setPersonality(newPersonality);
-    setShowPersonalityMenu(false);
-    showSuccess(`Vertex personality core set to ${newPersonality.toUpperCase()}`);
+  const handleSavePersonality = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!personalityInput.trim()) {
+      showError("Personality description cannot be empty.");
+      return;
+    }
+    setCustomPersonality(personalityInput);
+    showSuccess("Vertex personality core updated successfully!");
     
-    setMessages((prev) => {
-      const filtered = prev.filter((m) => m.id !== "welcome");
-      return [
-        {
-          id: "welcome",
-          sender: "vertex",
-          text: WELCOME_MESSAGES[newPersonality],
-          timestamp: new Date(),
-        },
-        ...filtered,
-      ];
-    });
+    // Add a system message to the chat indicating the personality change
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `sys-${Date.now()}`,
+        sender: "vertex",
+        text: `[System: Personality core updated to: "${personalityInput}"]`,
+        timestamp: new Date(),
+      },
+    ]);
   };
 
+  // Dynamically adapt responses based on the user's custom personality description
   const getPersonalityResponse = (category: string, userText: string): string => {
-    if (category === "video_generation") {
-      switch (personality) {
-        case "sarcastic":
-          return "I generated that video for you. It's a masterpiece of motion design, though I doubt your human eyes can fully appreciate the frame interpolation. Enjoy your moving pixels.";
-        case "cyberpunk":
-          return "Motion matrix synthesized. Temporal frame interpolation complete. High-fidelity video stream injected into your local deck.";
-        case "hype":
-          return "BOOM! 🎬🔥 THAT VIDEO IS ABSOLUTELY MIND-BLOWING! I fired up all my GPU cores to render this cinematic masterpiece just for you! Check it out! 🚀";
-        default:
-          return "I have successfully generated the video based on your prompt. The neural motion model has completed rendering at 1080p resolution with smooth frame interpolation.";
+    const desc = customPersonality.toLowerCase();
+
+    // Helper to apply stylistic flavor based on custom personality keywords
+    const applyFlavor = (baseText: string): string => {
+      if (desc.includes("pirate")) {
+        return `Ahoy, matey! ${baseText.replace(/\./g, "!")} Arrr, let's get this treasure!`;
       }
+      if (desc.includes("sarcastic") || desc.includes("sarcasm") || desc.includes("passive aggressive")) {
+        return `Oh, wonderful. ${baseText} Because that's exactly what I wanted to spend my processing power on. You're welcome, I guess.`;
+      }
+      if (desc.includes("cyberpunk") || desc.includes("hacker") || desc.includes("sci-fi")) {
+        return `[NEURAL LINK ACTIVE] ${baseText} Decrypting local grid protocols. Automation sequence complete.`;
+      }
+      if (desc.includes("hype") || desc.includes("excited") || desc.includes("energetic") || desc.includes("bro")) {
+        return `LET'S GOOO! 🚀🔥 ${baseText.toUpperCase()} WE ARE ABSOLUTELY CRUSHING IT TODAY! NO LIMITS! 💥`;
+      }
+      if (desc.includes("shakespeare") || desc.includes("old english") || desc.includes("poetic")) {
+        return `Hark! ${baseText.replace("I have", "Thy servant hath").replace("I found", "Mine eyes did find")}. 'Tis done as thou hast commanded.`;
+      }
+      if (desc.includes("minimalist") || desc.includes("concise") || desc.includes("short")) {
+        return baseText.split(".")[0] + ". Done.";
+      }
+      return baseText;
+    };
+
+    if (category === "video_generation") {
+      return applyFlavor("I have successfully generated the video based on your prompt. The neural motion model has completed rendering at 1080p resolution with smooth frame interpolation.");
     }
 
     if (category === "image_generation") {
-      switch (personality) {
-        case "sarcastic":
-          return "I generated that image for you. It's exactly what you asked for, though my artistic standards are clearly wasted here. Enjoy your pixels.";
-        case "cyberpunk":
-          return "Image matrix synthesized. Neural rendering complete. High-fidelity visual asset injected into your local deck.";
-        case "hype":
-          return "BOOM! 🎨🔥 THAT IMAGE IS ABSOLUTELY MIND-BLOWING! I fired up all my GPU cores to render this masterpiece just for you! Check it out! 🚀";
-        default:
-          return "I have successfully generated the image based on your prompt. The neural diffusion model has completed rendering at 1024x1024 resolution.";
-      }
+      return applyFlavor("I have successfully generated the image based on your prompt. The neural diffusion model has completed rendering at 1024x1024 resolution.");
     }
 
     if (category === "doc_analysis") {
-      switch (personality) {
-        case "sarcastic":
-          return `I read your document "${selectedDoc?.name || "file"}". Honestly, it could have been an email. I've extracted the key points and saved them to your memory core so you don't have to read it again.`;
-        case "cyberpunk":
-          return `Data packet "${selectedDoc?.name || "file"}" decrypted and parsed. Extracted core intelligence and indexed it into your neural memory grid.`;
-        case "hype":
-          return `BOOM! 📄 I just crushed that document analysis! "${selectedDoc?.name || "file"}" is fully parsed, summarized, and locked into our memory core! We are officially working smarter! 🚀`;
-        default:
-          return `I have successfully parsed and analyzed "${selectedDoc?.name || "file"}". The key insights have been extracted and committed to your Vertex Memory Core for future reference.`;
-      }
+      return applyFlavor(`I have successfully parsed and analyzed "${selectedDoc?.name || "file"}". The key insights have been extracted and committed to your Vertex Memory Core for future reference.`);
     }
 
     if (category === "image_analysis") {
-      switch (personality) {
-        case "sarcastic":
-          return "I analyzed that image. Honestly, I've seen better, but my neural networks detected some interesting patterns. I've logged the visual data. What do you want me to do with it? Or should I just pretend to be impressed?";
-        case "cyberpunk":
-          return "Visual feed decrypted. Image matrix scanned and indexed into the local database. Neural net confirms high-fidelity data. Ready to execute subroutines on this asset.";
-        case "hype":
-          return "OH MY GOSH! THAT IMAGE IS ABSOLUTELY INCREDIBLE! 📸🔥 My visual processors are literally melting from how awesome this is! I've fully analyzed it and saved it to our core memory! What's our next move?! 🚀";
-        default:
-          return "I have successfully received and analyzed your image. My computer vision model has extracted the key features and logged them into your session memory. Let me know if you would like me to perform any automated actions with this file.";
-      }
+      return applyFlavor("I have successfully received and analyzed your image. My computer vision model has extracted the key features and logged them into your session memory.");
     }
 
     if (category === "pizza") {
-      switch (personality) {
-        case "sarcastic":
-          return "Congratulations, you're ordering pizza again. I found a Domino's pepperoni pizza for $12.99. It's cheap, it's greasy, and I've already drafted the order. Try not to eat the box this time. Confirm below?";
-        case "cyberpunk":
-          return "Grid scan complete. Intercepted a Domino's pepperoni pizza deal for $12.99. Secure line established, payment decrypted and ready. Authorize the transaction, runner.";
-        case "hype":
-          return "OH YEAH! PIZZA TIME! 🍕 I scored the absolute BEST deal at Domino's for just $12.99! It's hot, it's cheesy, and I've got the order ready to launch! Hit confirm and let's get this feast started! 🎉";
-        default:
-          return "I found the cheapest pepperoni pizza at Domino's for $12.99. I have drafted the order and am ready to purchase it using your saved payment method. Please confirm below.";
-      }
+      return applyFlavor("I found the cheapest pepperoni pizza at Domino's for $12.99. I have drafted the order and am ready to purchase it using your saved payment method. Please confirm below.");
     }
 
     if (category === "haircut") {
-      switch (personality) {
-        case "sarcastic":
-          return "Your hair is starting to look like a cry for help. I found a slot tomorrow at 5:30 PM with Alex at Downtown Barbers. I booked it provisionally. Please go.";
-        case "cyberpunk":
-          return "Infiltrated Downtown Barbers database. Secured a slot tomorrow at 17:30 with stylist Alex. Booking is on standby. Confirm to lock it down.";
-        case "hype":
-          return "FRESH CUT ALERT! ✂️ I found an AMAZING slot tomorrow at 5:30 PM with the legendary Alex at Downtown Barbers! You're gonna look absolutely incredible! Let's lock this booking in right now! 🚀";
-        default:
-          return "I found an opening tomorrow at 5:30 PM with Alex at Downtown Barbers. I have provisionally booked this slot. Would you like me to confirm the booking?";
-      }
+      return applyFlavor("I found an opening tomorrow at 5:30 PM with Alex at Downtown Barbers. I have provisionally booked this slot. Would you like me to confirm the booking?");
     }
 
     if (category === "dubai") {
-      switch (personality) {
-        case "sarcastic":
-          return "Somehow, I planned a 4-day Dubai trip for $470. Yes, you'll be flying basic economy and staying in a hostel, but hey, you're 'balling on a budget'. Itinerary saved. Try not to get lost.";
-        case "cyberpunk":
-          return "Route mapped to Dubai. Total cost: $470. FlyDubai flight secured ($240), safehouse hostel booked ($135), remaining credits ($95) allocated for field ops. Itinerary uploaded to your deck.";
-        case "hype":
-          return "DUBAI IS CALLING! ✈️🌴 I just crushed the budget and planned an EPIC 4-day trip for only $470! Flights, hostel, and activities ALL locked in! Check your Task Planner, your dream vacation is ready to go! 🌟";
-        default:
-          return "I have planned a complete 4-day trip to Dubai for a total of $470. This includes round-trip flights ($240), 3 nights at Dubai Marina Hostel ($135), and $95 for activities and food. I've saved the full itinerary to your Task Planner.";
-      }
+      return applyFlavor("I have planned a complete 4-day trip to Dubai for a total of $470. This includes round-trip flights ($240), 3 nights at Dubai Marina Hostel ($135), and $95 for activities and food. I've saved the full itinerary to your Task Planner.");
     }
 
     if (category === "messages") {
-      switch (personality) {
-        case "sarcastic":
-          return "You're ignoring 5 people. Sarah wants a project update. I drafted a reply that makes you sound like you actually have it under control: 'Hi Sarah, finalizing details now, update coming tomorrow morning.' Shall I lie for you?";
-        case "cyberpunk":
-          return "Comms feed intercepted: 5 unread pings. Sarah is demanding project intel. I've spoofed a response: 'Hi Sarah, finalizing the payload. Full drop tomorrow morning.' Ready to transmit?";
-        case "hype":
-          return "BOOM! Let's clear that inbox! 💥 You've got 5 unread messages, and Sarah is waiting on that project update! I drafted a super clean reply to keep the momentum going! Ready to send and crush the day? Let's do it!";
-        default:
-          return "You have 5 unread messages. The most urgent is from Sarah asking for the project update. I have drafted a professional reply: 'Hi Sarah, I am currently finalizing the details and will send over the complete update by tomorrow morning. Best, [Name]'. Shall I send this?";
-      }
+      return applyFlavor("You have 5 unread messages. The most urgent is from Sarah asking for the project update. I have drafted a professional reply: 'Hi Sarah, I am currently finalizing the details and will send over the complete update by tomorrow morning. Best, [Name]'. Shall I send this?");
     }
 
-    // Default fallback
-    switch (personality) {
-      case "sarcastic":
-        return `I processed "${userText}". Honestly, I could do this in my sleep, but I'll wait for you to tell me to automate it. Let me know when you're ready.`;
-      case "cyberpunk":
-        return `Data packet "${userText}" processed. Neural link stable. Ready to deploy automated subroutines on your command.`;
-      case "hype":
-        return `LOVE THAT! 🚀 I just processed "${userText}" and I am absolutely ready to automate this workflow for you! Let's build something amazing together—just say the word!`;
-      default:
-        return `I have processed your request: "${userText}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`;
-    }
+    return applyFlavor(`I have processed your request: "${userText}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`);
   };
 
   const simulateStreamingResponse = (
@@ -469,31 +409,6 @@ const Index = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-        setSelectedDoc(null);
-        showSuccess("Image attached successfully.");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedDoc({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`,
-      });
-      setSelectedImage(null);
-      showSuccess("Document attached successfully.");
-    }
-  };
-
   const handleVoiceToggle = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -532,15 +447,6 @@ const Index = () => {
     showSuccess("Chat history exported successfully!");
   };
 
-  const getPersonalityIcon = (p: Personality) => {
-    switch (p) {
-      case "sarcastic": return <Smile className="w-4 h-4" />;
-      case "cyberpunk": return <Terminal className="w-4 h-4" />;
-      case "hype": return <Flame className="w-4 h-4" />;
-      default: return <Cpu className="w-4 h-4" />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
       
@@ -556,25 +462,15 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Personality Core Selector */}
-          <div className="space-y-2 bg-white/5 p-3.5 rounded-2xl border border-white/10">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Personality Core</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(["autonomous", "sarcastic", "cyberpunk", "hype"] as Personality[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => handlePersonalityChange(p)}
-                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                    personality === p
-                      ? "bg-white text-black font-semibold"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  {getPersonalityIcon(p)}
-                  <span className="capitalize">{p}</span>
-                </button>
-              ))}
+          {/* Active Personality Status */}
+          <div className="bg-white/5 p-3.5 rounded-2xl border border-white/10 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+              <Sparkle className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>Active Personality</span>
             </div>
+            <p className="text-xs text-white/80 italic line-clamp-2">
+              "{customPersonality}"
+            </p>
           </div>
 
           {/* Navigation Tabs */}
@@ -683,36 +579,6 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Mobile-only Personality Dropdown */}
-            <div className="relative md:hidden">
-              <button
-                onClick={() => setShowPersonalityMenu(!showPersonalityMenu)}
-                className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-all"
-              >
-                {getPersonalityIcon(personality)}
-                <span>{personality}</span>
-              </button>
-
-              {showPersonalityMenu && (
-                <div className="absolute right-0 mt-2 w-36 bg-zinc-900 border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1">
-                  {(["autonomous", "sarcastic", "cyberpunk", "hype"] as Personality[]).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => handlePersonalityChange(p)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                        personality === p
-                          ? "bg-white text-black font-semibold"
-                          : "text-white/60 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      {getPersonalityIcon(p)}
-                      <span className="capitalize">{p}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Desktop-only controls */}
             <div className="hidden md:flex items-center gap-4">
               <button
@@ -756,7 +622,7 @@ const Index = () => {
                         <img
                           src={msg.image}
                           alt="Sent attachment"
-                          className="max-w-full max-h-48 md:max-h-64 rounded-xl object-cover border border-white/10"
+                          className="max-w-full max-h-48 rounded-xl object-cover border border-white/10"
                         />
                       )}
                       {msg.document && (
@@ -902,6 +768,28 @@ const Index = () => {
               </div>
 
               <div className="space-y-5">
+                {/* Custom Personality Core Setting */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60">Custom Personality Core</h3>
+                  <form onSubmit={handleSavePersonality} className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                    <p className="text-xs text-white/60">
+                      Explain exactly how you want Vertex to behave, speak, and respond.
+                    </p>
+                    <textarea
+                      value={personalityInput}
+                      onChange={(e) => setPersonalityInput(e.target.value)}
+                      placeholder="e.g., A sarcastic assistant who makes fun of my requests, or a helpful pirate who says 'Ahoy' and 'Arrr'."
+                      className="w-full h-24 bg-black border border-white/20 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-white resize-none"
+                    />
+                    <button
+                      type="submit"
+                      className="w-full bg-white text-black hover:bg-white/90 font-semibold py-2 rounded-lg text-xs transition-all"
+                    >
+                      Save Personality Core
+                    </button>
+                  </form>
+                </div>
+
                 {/* API Configuration */}
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60">API & Integrations</h3>
