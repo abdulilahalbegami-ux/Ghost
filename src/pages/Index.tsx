@@ -32,6 +32,9 @@ import {
   Lock,
   Sliders,
   Check,
+  Plus,
+  Pin,
+  Menu,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -59,6 +62,14 @@ interface Message {
   isStreaming?: boolean;
 }
 
+interface Chat {
+  id: string;
+  title: string;
+  isPinned: boolean;
+  timestamp: Date;
+  messages: Message[];
+}
+
 const DEFAULT_PROMPTS = [
   { text: "Order me the cheapest pepperoni pizza.", icon: "🍕" },
   { text: "Generate a video of a futuristic neon highway.", icon: "🎬" },
@@ -69,6 +80,7 @@ const DEFAULT_PROMPTS = [
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // --- Authentication State ---
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Default to Guest Mode
@@ -122,14 +134,28 @@ const Index = () => {
   const [voiceSelection, setVoiceSelection] = useState("Male Neural (US)");
   const [defaultOpeningPage, setDefaultOpeningPage] = useState<"new-chat" | "recent-chats">("new-chat");
 
-  const [messages, setMessages] = useState<Message[]>([
+  // --- Chat History State ---
+  const [chats, setChats] = useState<Chat[]>([
     {
-      id: "welcome",
-      sender: "vertex",
-      text: "Vertex online. I am your fully autonomous agent. Tell me what you need automated today.",
+      id: "default-chat",
+      title: "Welcome to Vertex",
+      isPinned: false,
       timestamp: new Date(),
+      messages: [
+        {
+          id: "welcome",
+          sender: "vertex",
+          text: "Vertex online. I am your fully autonomous agent. Tell me what you need automated today.",
+          timestamp: new Date(),
+        },
+      ],
     },
   ]);
+  const [activeChatId, setActiveChatId] = useState<string>("default-chat");
+
+  const activeChat = chats.find((c) => c.id === activeChatId) || chats[0];
+  const activeMessages = activeChat ? activeChat.messages : [];
+
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<{ name: string; size: string } | null>(null);
@@ -146,7 +172,7 @@ const Index = () => {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, currentSteps]);
+  }, [chats, activeChatId, currentSteps]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -176,6 +202,65 @@ const Index = () => {
     }
   }, []);
 
+  // Helper to update messages for the active chat
+  const updateActiveChatMessages = (updater: Message[] | ((prev: Message[]) => Message[])) => {
+    setChats((prevChats) =>
+      prevChats.map((c) => {
+        if (c.id === activeChatId) {
+          const newMsgs = typeof updater === "function" ? updater(c.messages) : updater;
+          return { ...c, messages: newMsgs };
+        }
+        return c;
+      })
+    );
+  };
+
+  const handleNewChat = () => {
+    const newId = Date.now().toString();
+    const newChat: Chat = {
+      id: newId,
+      title: "New Chat",
+      isPinned: false,
+      timestamp: new Date(),
+      messages: [
+        {
+          id: "welcome",
+          sender: "vertex",
+          text: "Vertex online. I am your fully autonomous agent. Tell me what you need automated today.",
+          timestamp: new Date(),
+        },
+      ],
+    };
+    setChats([newChat, ...chats]);
+    setActiveChatId(newId);
+    setActiveTab("chat");
+    setIsMobileSidebarOpen(false);
+    showSuccess("New chat session started.");
+  };
+
+  const handleTogglePin = (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, isPinned: !c.isPinned } : c))
+    );
+    const targetChat = chats.find((c) => c.id === chatId);
+    showSuccess(targetChat?.isPinned ? "Chat unpinned." : "Chat pinned to top.");
+  };
+
+  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (chats.length === 1) {
+      showError("You must keep at least one chat session.");
+      return;
+    }
+    const remaining = chats.filter((c) => c.id !== chatId);
+    setChats(remaining);
+    if (activeChatId === chatId) {
+      setActiveChatId(remaining[0].id);
+    }
+    showSuccess("Chat deleted.");
+  };
+
   const handleSavePersonality = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoggedIn) {
@@ -192,7 +277,7 @@ const Index = () => {
     showSuccess("Vertex personality core updated successfully!");
     
     // Add a system message to the chat indicating the personality change
-    setMessages((prev) => [
+    updateActiveChatMessages((prev) => [
       ...prev,
       {
         id: `sys-${Date.now()}`,
@@ -236,7 +321,7 @@ const Index = () => {
       return;
     }
     try {
-      const chatData = JSON.stringify(messages, null, 2);
+      const chatData = JSON.stringify(activeMessages, null, 2);
       const blob = new Blob([chatData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -369,18 +454,18 @@ const Index = () => {
           isStreaming: true,
         };
 
-        setMessages((prev) => [...prev, newMessage]);
+        updateActiveChatMessages((prev) => [...prev, newMessage]);
 
         const streamInterval = setInterval(() => {
           if (wordIndex < words.length) {
             streamedText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
-            setMessages((prev) =>
+            updateActiveChatMessages((prev) =>
               prev.map((m) => (m.id === newMessage.id ? { ...m, text: streamedText } : m))
             );
             wordIndex++;
           } else {
             clearInterval(streamInterval);
-            setMessages((prev) =>
+            updateActiveChatMessages((prev) =>
               prev.map((m) => (m.id === newMessage.id ? { ...m, isStreaming: false } : m))
             );
             setCurrentSteps([]);
@@ -407,6 +492,17 @@ const Index = () => {
       return;
     }
 
+    // Auto-name the chat if it's currently named "New Chat"
+    if (activeChat.title === "New Chat" && text.trim()) {
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === activeChatId
+            ? { ...c, title: text.slice(0, 24) + (text.length > 24 ? "..." : "") }
+            : c
+        )
+      );
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
@@ -416,7 +512,7 @@ const Index = () => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    updateActiveChatMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setSelectedImage(null);
     setSelectedDoc(null);
@@ -566,14 +662,16 @@ const Index = () => {
     showSuccess(authMode === "signin" ? "Welcome back to Vertex OS!" : "Account created successfully!");
   };
 
-  return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
-      
-      {/* Left Sidebar (Only visible on PC/Desktop browsers) */}
-      <div className="hidden md:flex md:w-64 lg:w-72 bg-zinc-950 border-r border-white/10 p-6 flex-col justify-between shrink-0">
-        <div className="space-y-8">
+  // Sidebar Content Component (Reused for Desktop and Mobile Drawer)
+  const SidebarContent = () => {
+    const pinnedChats = chats.filter((c) => c.isPinned);
+    const recentChats = chats.filter((c) => !c.isPinned);
+
+    return (
+      <div className="flex flex-col h-full justify-between">
+        <div className="space-y-6 flex-1 flex flex-col min-h-0">
           {/* Brand Header */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <VertexLogo size="sm" />
             <div>
               <h1 className="text-lg font-bold tracking-widest uppercase">Vertex</h1>
@@ -581,95 +679,193 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Active Personality Status */}
-          <div className="bg-white/5 p-3.5 rounded-2xl border border-white/10 space-y-1.5 relative overflow-hidden">
-            {!isLoggedIn && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center z-10">
-                <Lock className="w-4 h-4 text-white/60 mb-1" />
-                <p className="text-[9px] font-bold uppercase tracking-wider text-white/80">Custom Personality</p>
-                <button
-                  onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
-                  className="text-[8px] text-white underline hover:text-white/80 mt-0.5"
-                >
-                  Sign in to unlock
-                </button>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
-              <Sparkle className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>Active Personality</span>
+          {/* New Chat Button */}
+          <button
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-white/90 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+          >
+            <Plus className="w-4 h-4" /> New Chat
+          </button>
+
+          {/* Conversations List */}
+          <div className="flex-1 flex flex-col min-h-0 space-y-4">
+            <div className="flex items-center justify-between shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Conversations</p>
+              <span className="text-[9px] font-mono text-white/30">{chats.length} Active</span>
             </div>
-            <p className="text-xs text-white/80 italic line-clamp-2">
-              "{isLoggedIn ? customPersonality : "Default Professional Core"}"
-            </p>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
+              {/* Pinned Chats */}
+              {pinnedChats.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-amber-400/60 px-2 flex items-center gap-1">
+                    <Pin className="w-2.5 h-2.5 fill-current" /> Pinned
+                  </p>
+                  {pinnedChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => {
+                        setActiveChatId(chat.id);
+                        setActiveTab("chat");
+                        setIsMobileSidebarOpen(false);
+                      }}
+                      className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-all ${
+                        activeChatId === chat.id
+                          ? "bg-white/10 text-white border border-white/10"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <MessageSquare className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                        <span className="truncate font-medium">{chat.title}</span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => handleTogglePin(chat.id, e)}
+                          title="Unpin Chat"
+                          className="p-1 hover:bg-white/10 rounded text-amber-400"
+                        >
+                          <Pin className="w-3 h-3 fill-current" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteChat(chat.id, e)}
+                          title="Delete Chat"
+                          className="p-1 hover:bg-white/10 rounded text-white/40 hover:text-red-400"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Recent Chats */}
+              <div className="space-y-1">
+                {pinnedChats.length > 0 && (
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/30 px-2">Recent</p>
+                )}
+                {recentChats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => {
+                      setActiveChatId(chat.id);
+                      setActiveTab("chat");
+                      setIsMobileSidebarOpen(false);
+                    }}
+                    className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-all ${
+                      activeChatId === chat.id
+                        ? "bg-white/10 text-white border border-white/10"
+                        : "text-white/60 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate font-medium">{chat.title}</span>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => handleTogglePin(chat.id, e)}
+                        title="Pin Chat"
+                        className="p-1 hover:bg-white/10 rounded text-white/40 hover:text-white"
+                      >
+                        <Pin className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteChat(chat.id, e)}
+                        title="Delete Chat"
+                        className="p-1 hover:bg-white/10 rounded text-white/40 hover:text-red-400"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="space-y-2">
+          <nav className="space-y-1 shrink-0 border-t border-white/5 pt-4">
             <button
-              onClick={() => setActiveTab("chat")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              onClick={() => {
+                setActiveTab("chat");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === "chat"
                   ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.15)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="w-3.5 h-3.5" />
               <span>Autonomous Chat</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("voice")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              onClick={() => {
+                setActiveTab("voice");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === "voice"
                   ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.15)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Mic className="w-4 h-4" />
+              <Mic className="w-3.5 h-3.5" />
               <span>Voice Interface</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("memory")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              onClick={() => {
+                setActiveTab("memory");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === "memory"
                   ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.15)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Brain className="w-4 h-4" />
+              <Brain className="w-3.5 h-3.5" />
               <span>Memory Core</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("tasks")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              onClick={() => {
+                setActiveTab("tasks");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === "tasks"
                   ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.15)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-3.5 h-3.5" />
               <span>Automated Tasks</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              onClick={() => {
+                setActiveTab("settings");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === "settings"
                   ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.15)]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3.5 h-3.5" />
               <span>System Settings</span>
             </button>
           </nav>
         </div>
 
         {/* User Profile Footer */}
-        <div className="border-t border-white/10 pt-4 flex items-center justify-between">
+        <div className="border-t border-white/10 pt-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
               <User className="w-5 h-5 text-white" />
@@ -681,7 +877,10 @@ const Index = () => {
           </div>
           {isLoggedIn ? (
             <button
-              onClick={() => { setIsLoggedIn(false); showSuccess("Logged out of Vertex OS."); }}
+              onClick={() => {
+                setIsLoggedIn(false);
+                showSuccess("Logged out of Vertex OS.");
+              }}
               title="Sign Out"
               className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
             >
@@ -689,7 +888,10 @@ const Index = () => {
             </button>
           ) : (
             <button
-              onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
+              onClick={() => {
+                setAuthMode("signin");
+                setShowAuthModal(true);
+              }}
               title="Sign In"
               className="text-white/40 hover:text-white p-2 rounded-lg transition-colors"
             >
@@ -698,6 +900,39 @@ const Index = () => {
           )}
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
+      
+      {/* Left Sidebar (Only visible on PC/Desktop browsers) */}
+      <div className="hidden md:flex md:w-64 lg:w-72 bg-zinc-950 border-r border-white/10 p-6 flex-col justify-between shrink-0 h-screen">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Sidebar Drawer (Slide-over menu) */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          {/* Drawer Content */}
+          <div className="relative w-72 max-w-xs bg-zinc-950 border-r border-white/10 p-6 flex flex-col h-full z-10 animate-in slide-in-from-left duration-200">
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex-1 min-h-0 mt-4">
+              <SidebarContent />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area (Responsive full-screen on PC, mobile-optimized on phones) */}
       <div className="flex-1 flex flex-col bg-black relative overflow-hidden h-screen">
@@ -705,6 +940,14 @@ const Index = () => {
         {/* Top Status Bar / Header */}
         <div className="h-14 border-b border-white/10 px-6 flex items-center justify-between bg-zinc-950/50 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-2">
+            {/* Mobile-only Menu Toggle */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-1.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
             {/* Mobile-only logo */}
             <div className="md:hidden flex items-center gap-2">
               <VertexLogo size="sm" />
@@ -749,7 +992,7 @@ const Index = () => {
             <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-4">
               {/* Messages Container */}
               <div className="space-y-5">
-                {messages.map((msg) => (
+                {activeMessages.map((msg) => (
                   <div
                     key={msg.id}
                     className={`flex flex-col gap-1.5 group ${msg.sender === "user" ? "items-end" : "items-start"}`}
@@ -837,7 +1080,7 @@ const Index = () => {
               </div>
 
               {/* Default Prompts (Only show if conversation is fresh) */}
-              {messages.length === 1 && !isStreaming && (
+              {activeMessages.length === 1 && !isStreaming && (
                 <div className="space-y-2.5 mt-4">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Suggested Automations</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1396,7 +1639,7 @@ const Index = () => {
                     <button
                       onClick={() => {
                         if (confirm("Are you sure you want to clear all chat history? This cannot be undone.")) {
-                          setMessages([messages[0]]);
+                          setChats([chats[0]]);
                           showSuccess("All chats cleared successfully.");
                         }
                       }}
