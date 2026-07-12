@@ -20,6 +20,10 @@ import {
   Check,
   X,
   ShieldAlert,
+  Cpu,
+  Smile,
+  Terminal,
+  Flame,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -28,6 +32,8 @@ import TaskPlanner from "@/components/TaskPlanner";
 import ProductComparer from "@/components/ProductComparer";
 import ReasoningSteps, { Step } from "@/components/ReasoningSteps";
 import { showSuccess, showError } from "@/utils/toast";
+
+type Personality = "autonomous" | "sarcastic" | "cyberpunk" | "hype";
 
 interface Message {
   id: string;
@@ -47,13 +53,21 @@ const DEFAULT_PROMPTS = [
   { text: "Plan my trip to Dubai for under $500.", icon: "✈️" },
 ];
 
+const WELCOME_MESSAGES: Record<Personality, string> = {
+  autonomous: "I am Vertex. I don't just chat; I execute. Tell me what you need automated today.",
+  sarcastic: "Oh, great. Another human needing help. I am Vertex. Tell me what to automate before I lose my mind.",
+  cyberpunk: "Vertex online. Neural link established. Ready to bypass protocols and automate your grid, runner.",
+  hype: "LET'S GOOO! 🚀 I am Vertex, your ultra-charged automation partner! What epic tasks are we crushing today?! 🔥",
+};
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
+  const [personality, setPersonality] = useState<Personality>("autonomous");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       sender: "vertex",
-      text: "I am Vertex. I don't just chat; I execute. Tell me what you need automated today.",
+      text: WELCOME_MESSAGES.autonomous,
       timestamp: new Date(),
     },
   ]);
@@ -70,10 +84,96 @@ const Index = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, currentSteps]);
 
+  // Update welcome message when personality changes
+  const handlePersonalityChange = (newPersonality: Personality) => {
+    setPersonality(newPersonality);
+    showSuccess(`Vertex personality core set to ${newPersonality.toUpperCase()}`);
+    
+    // Update or reset welcome message
+    setMessages((prev) => {
+      const filtered = prev.filter((m) => m.id !== "welcome");
+      return [
+        {
+          id: "welcome",
+          sender: "vertex",
+          text: WELCOME_MESSAGES[newPersonality],
+          timestamp: new Date(),
+        },
+        ...filtered,
+      ];
+    });
+  };
+
+  const getPersonalityResponse = (category: string, userText: string): string => {
+    if (category === "pizza") {
+      switch (personality) {
+        case "sarcastic":
+          return "Congratulations, you're ordering pizza again. I found a Domino's pepperoni pizza for $12.99. It's cheap, it's greasy, and I've already drafted the order. Try not to eat the box this time. Confirm below?";
+        case "cyberpunk":
+          return "Grid scan complete. Intercepted a Domino's pepperoni pizza deal for $12.99. Secure line established, payment decrypted and ready. Authorize the transaction, runner.";
+        case "hype":
+          return "OH YEAH! PIZZA TIME! 🍕 I scored the absolute BEST deal at Domino's for just $12.99! It's hot, it's cheesy, and I've got the order ready to launch! Hit confirm and let's get this feast started! 🎉";
+        default:
+          return "I found the cheapest pepperoni pizza at Domino's for $12.99. I have drafted the order and am ready to purchase it using your saved payment method. Please confirm below.";
+      }
+    }
+
+    if (category === "haircut") {
+      switch (personality) {
+        case "sarcastic":
+          return "Your hair is starting to look like a cry for help. I found a slot tomorrow at 5:30 PM with Alex at Downtown Barbers. I booked it provisionally. Please go.";
+        case "cyberpunk":
+          return "Infiltrated Downtown Barbers database. Secured a slot tomorrow at 17:30 with stylist Alex. Booking is on standby. Confirm to lock it down.";
+        case "hype":
+          return "FRESH CUT ALERT! ✂️ I found an AMAZING slot tomorrow at 5:30 PM with the legendary Alex at Downtown Barbers! You're gonna look absolutely incredible! Let's lock this booking in right now! 🚀";
+        default:
+          return "I found an opening tomorrow at 5:30 PM with Alex at Downtown Barbers. I have provisionally booked this slot. Would you like me to confirm the booking?";
+      }
+    }
+
+    if (category === "dubai") {
+      switch (personality) {
+        case "sarcastic":
+          return "Somehow, I planned a 4-day Dubai trip for $470. Yes, you'll be flying basic economy and staying in a hostel, but hey, you're 'balling on a budget'. Itinerary saved. Try not to get lost.";
+        case "cyberpunk":
+          return "Route mapped to Dubai. Total cost: $470. FlyDubai flight secured ($240), safehouse hostel booked ($135), remaining credits ($95) allocated for field ops. Itinerary uploaded to your deck.";
+        case "hype":
+          return "DUBAI IS CALLING! ✈️🌴 I just crushed the budget and planned an EPIC 4-day trip for only $470! Flights, hostel, and activities ALL locked in! Check your Task Planner, your dream vacation is ready to go! 🌟";
+        default:
+          return "I have planned a complete 4-day trip to Dubai for a total of $470. This includes round-trip flights ($240), 3 nights at Dubai Marina Hostel ($135), and $95 for activities and food. I've saved the full itinerary to your Task Planner.";
+      }
+    }
+
+    if (category === "messages") {
+      switch (personality) {
+        case "sarcastic":
+          return "You're ignoring 5 people. Sarah wants a project update. I drafted a reply that makes you sound like you actually have it under control: 'Hi Sarah, finalizing details now, update coming tomorrow morning.' Shall I lie for you?";
+        case "cyberpunk":
+          return "Comms feed intercepted: 5 unread pings. Sarah is demanding project intel. I've spoofed a response: 'Hi Sarah, finalizing the payload. Full drop tomorrow morning.' Ready to transmit?";
+        case "hype":
+          return "BOOM! Let's clear that inbox! 💥 You've got 5 unread messages, and Sarah is waiting on that project update! I drafted a super clean reply to keep the momentum going! Ready to send and crush the day? Let's do it!";
+        default:
+          return "You have 5 unread messages. The most urgent is from Sarah asking for the project update. I have drafted a professional reply: 'Hi Sarah, I am currently finalizing the details and will send over the complete update by tomorrow morning. Best, [Name]'. Shall I send this?";
+      }
+    }
+
+    // Default fallback
+    switch (personality) {
+      case "sarcastic":
+        return `I processed "${userText}". Honestly, I could do this in my sleep, but I'll wait for you to tell me to automate it. Let me know when you're ready.`;
+      case "cyberpunk":
+        return `Data packet "${userText}" processed. Neural link stable. Ready to deploy automated subroutines on your command.`;
+      case "hype":
+        return `LOVE THAT! 🚀 I just processed "${userText}" and I am absolutely ready to automate this workflow for you! Let's build something amazing together—just say the word!`;
+      default:
+        return `I have processed your request: "${userText}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`;
+    }
+  };
+
   const simulateStreamingResponse = (
     userText: string,
     stepsList: Step[],
-    finalText: string,
+    category: string,
     productsList?: any[]
   ) => {
     setIsStreaming(true);
@@ -84,7 +184,6 @@ const Index = () => {
 
     const runNextStep = () => {
       if (currentStepIndex < stepsList.length) {
-        // Set current step to running
         setCurrentSteps((prev) =>
           prev.map((s, idx) =>
             idx === currentStepIndex
@@ -95,9 +194,7 @@ const Index = () => {
           )
         );
 
-        // Reduced delay from 1500ms to 400ms for ultra-fast step transitions
         setTimeout(() => {
-          // Complete current step
           setCurrentSteps((prev) =>
             prev.map((s, idx) => (idx === currentStepIndex ? { ...s, status: "completed" } : s))
           );
@@ -105,9 +202,9 @@ const Index = () => {
           runNextStep();
         }, 400);
       } else {
-        // All steps completed, stream final text
         setIsStreaming(false);
         let streamedText = "";
+        const finalText = getPersonalityResponse(category, userText);
         const words = finalText.split(" ");
         let wordIndex = 0;
 
@@ -123,7 +220,6 @@ const Index = () => {
 
         setMessages((prev) => [...prev, newMessage]);
 
-        // Reduced interval from 80ms to 25ms for lightning-fast text streaming
         const streamInterval = setInterval(() => {
           if (wordIndex < words.length) {
             streamedText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
@@ -160,7 +256,6 @@ const Index = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
 
-    // Determine response based on prompt
     const lowerText = text.toLowerCase();
 
     if (lowerText.includes("pizza")) {
@@ -172,7 +267,7 @@ const Index = () => {
           { id: "3", title: "Applying coupon codes", status: "pending", log: "Applied code '50OFF' at Domino's. Final price: $12.99" },
           { id: "4", title: "Drafting order confirmation", status: "pending", log: "Ready to order cheapest option." },
         ],
-        "I found the cheapest pepperoni pizza at Domino's for $12.99. I have drafted the order and am ready to purchase it using your saved payment method. Please confirm below.",
+        "pizza",
         [
           { name: "Domino's Pepperoni Pizza", price: 12.99, delivery: "20-30 mins", rating: "4.5★", source: "Domino's App", isBest: true },
           { name: "Pizza Hut Pepperoni", price: 14.99, delivery: "35-45 mins", rating: "4.2★", source: "Pizza Hut", isBest: false },
@@ -187,7 +282,7 @@ const Index = () => {
           { id: "2", title: "Searching local barbershops", status: "pending", log: "Found 'Downtown Barbers' and 'Classic Cuts' with openings." },
           { id: "3", title: "Matching stylist preferences", status: "pending", log: "Stylist Alex is available at 5:30 PM." },
         ],
-        "I found an opening tomorrow at 5:30 PM with Alex at Downtown Barbers. I have provisionally booked this slot. Would you like me to confirm the booking?"
+        "haircut"
       );
     } else if (lowerText.includes("dubai")) {
       simulateStreamingResponse(
@@ -197,7 +292,7 @@ const Index = () => {
           { id: "2", title: "Finding highly-rated hostels/hotels", status: "pending", log: "Found 'Dubai Marina Hostel' for $45/night." },
           { id: "3", title: "Structuring 4-day itinerary", status: "pending", log: "Day 1: Burj Khalifa & Mall. Day 2: Desert Safari. Day 3: Old Dubai. Day 4: Beach." },
         ],
-        "I have planned a complete 4-day trip to Dubai for a total of $470. This includes round-trip flights ($240), 3 nights at Dubai Marina Hostel ($135), and $95 for activities and food. I've saved the full itinerary to your Task Planner."
+        "dubai"
       );
     } else if (lowerText.includes("messages") || lowerText.includes("reply")) {
       simulateStreamingResponse(
@@ -207,7 +302,7 @@ const Index = () => {
           { id: "2", title: "Analyzing message context", status: "pending", log: "Urgent request from Sarah regarding project update." },
           { id: "3", title: "Drafting professional replies", status: "pending", log: "Drafted polite, professional response acknowledging receipt." },
         ],
-        "You have 5 unread messages. The most urgent is from Sarah asking for the project update. I have drafted a professional reply: 'Hi Sarah, I am currently finalizing the details and will send over the complete update by tomorrow morning. Best, [Name]'. Shall I send this?"
+        "messages"
       );
     } else {
       simulateStreamingResponse(
@@ -216,7 +311,7 @@ const Index = () => {
           { id: "1", title: "Analyzing request", status: "pending", log: "Processing natural language intent..." },
           { id: "2", title: "Searching knowledge base", status: "pending", log: "Retrieving relevant context..." },
         ],
-        `I have processed your request: "${text}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`
+        "default"
       );
     }
   };
@@ -229,7 +324,6 @@ const Index = () => {
       setIsListening(true);
       setActiveTab("voice");
       showSuccess("Voice mode active. Speak now.");
-      // Simulate voice response after 2 seconds (faster voice trigger)
       setTimeout(() => {
         if (isListening) {
           setIsListening(false);
@@ -250,6 +344,57 @@ const Index = () => {
             <div>
               <h1 className="text-xl font-bold tracking-widest uppercase">Vertex</h1>
               <p className="text-[10px] text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
+            </div>
+          </div>
+
+          {/* Personality Core Selector */}
+          <div className="space-y-2 bg-white/5 p-3.5 rounded-2xl border border-white/10">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Personality Core</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={() => handlePersonalityChange("autonomous")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                  personality === "autonomous"
+                    ? "bg-white text-black font-semibold"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>Auto</span>
+              </button>
+              <button
+                onClick={() => handlePersonalityChange("sarcastic")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                  personality === "sarcastic"
+                    ? "bg-white text-black font-semibold"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span>Sarcastic</span>
+              </button>
+              <button
+                onClick={() => handlePersonalityChange("cyberpunk")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                  personality === "cyberpunk"
+                    ? "bg-white text-black font-semibold"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Cyber</span>
+              </button>
+              <button
+                onClick={() => handlePersonalityChange("hype")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                  personality === "hype"
+                    ? "bg-white text-black font-semibold"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Flame className="w-3.5 h-3.5" />
+                <span>Hype</span>
+              </button>
             </div>
           </div>
 
