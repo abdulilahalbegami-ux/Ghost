@@ -278,6 +278,11 @@ const Index = () => {
     if (productsList) setCurrentProducts(productsList);
 
     let currentStepIndex = 0;
+    
+    // Determine speed based on category (generation tasks are ultra-fast)
+    const isGeneration = category === "image_generation" || category === "video_generation";
+    const stepDelay = isGeneration ? 80 : 400; // 80ms for generation, 400ms for standard tasks
+    const streamDelay = isGeneration ? 5 : 25; // 5ms per word for generation, 25ms for standard tasks
 
     const runNextStep = () => {
       if (currentStepIndex < stepsList.length) {
@@ -297,7 +302,7 @@ const Index = () => {
           );
           currentStepIndex++;
           runNextStep();
-        }, 400);
+        }, stepDelay);
       } else {
         setIsStreaming(false);
         let streamedText = "";
@@ -335,7 +340,7 @@ const Index = () => {
             setCurrentProducts([]);
             showSuccess("Task completed successfully.");
           }
-        }, 25);
+        }, streamDelay);
       }
     };
 
