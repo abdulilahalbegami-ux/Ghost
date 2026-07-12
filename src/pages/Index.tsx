@@ -95,6 +95,7 @@ const Index = () => {
           )
         );
 
+        // Reduced delay from 1500ms to 400ms for ultra-fast step transitions
         setTimeout(() => {
           // Complete current step
           setCurrentSteps((prev) =>
@@ -102,7 +103,7 @@ const Index = () => {
           );
           currentStepIndex++;
           runNextStep();
-        }, 1500);
+        }, 400);
       } else {
         // All steps completed, stream final text
         setIsStreaming(false);
@@ -122,6 +123,7 @@ const Index = () => {
 
         setMessages((prev) => [...prev, newMessage]);
 
+        // Reduced interval from 80ms to 25ms for lightning-fast text streaming
         const streamInterval = setInterval(() => {
           if (wordIndex < words.length) {
             streamedText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
@@ -138,7 +140,7 @@ const Index = () => {
             setCurrentProducts([]);
             showSuccess("Task completed successfully.");
           }
-        }, 80);
+        }, 25);
       }
     };
 
@@ -227,13 +229,13 @@ const Index = () => {
       setIsListening(true);
       setActiveTab("voice");
       showSuccess("Voice mode active. Speak now.");
-      // Simulate voice response after 4 seconds
+      // Simulate voice response after 2 seconds (faster voice trigger)
       setTimeout(() => {
         if (isListening) {
           setIsListening(false);
           handleSendMessage("Order me the cheapest pepperoni pizza.");
         }
-      }, 4000);
+      }, 2000);
     }
   };
 
