@@ -18,6 +18,8 @@ import {
   Cpu,
   Download,
   Sparkle,
+  ImageIcon,
+  FileText,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -137,6 +139,31 @@ const Index = () => {
         timestamp: new Date(),
       },
     ]);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setSelectedDoc(null);
+        showSuccess("Image attached successfully.");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDoc({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+      });
+      setSelectedImage(null);
+      showSuccess("Document attached successfully.");
+    }
   };
 
   // Dynamically adapt responses based on the user's custom personality description
@@ -407,44 +434,6 @@ const Index = () => {
         "default"
       );
     }
-  };
-
-  const handleVoiceToggle = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      showSuccess("Voice mode deactivated.");
-    } else {
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
-        setIsListening(true);
-        setActiveTab("voice");
-        showSuccess("Voice mode active. Speak now.");
-      } else {
-        setIsListening(true);
-        setActiveTab("voice");
-        showSuccess("Voice mode active. Speak now.");
-        setTimeout(() => {
-          if (isListening) {
-            setIsListening(false);
-            handleSendMessage("Order me the cheapest pepperoni pizza.");
-          }
-        }, 2000);
-      }
-    }
-  };
-
-  const handleExportChat = () => {
-    const chatData = JSON.stringify(messages, null, 2);
-    const blob = new Blob([chatData], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `vertex-chat-export-${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showSuccess("Chat history exported successfully!");
   };
 
   return (
