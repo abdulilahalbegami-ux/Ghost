@@ -9,17 +9,12 @@ import {
   Settings,
   Send,
   Sparkles,
-  Globe,
-  Compass,
   User,
   LogOut,
   Volume2,
   VolumeX,
-  Search,
   ArrowRight,
-  Check,
   X,
-  ShieldAlert,
   Cpu,
   Smile,
   Terminal,
@@ -27,7 +22,6 @@ import {
   ImageIcon,
   FileText,
   Download,
-  Video,
 } from "lucide-react";
 import VertexLogo from "@/components/VertexLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -91,6 +85,7 @@ const Index = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentSteps, setCurrentSteps] = useState<Step[]>([]);
   const [currentProducts, setCurrentProducts] = useState<any[]>([]);
+  const [showPersonalityMenu, setShowPersonalityMenu] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -131,6 +126,7 @@ const Index = () => {
 
   const handlePersonalityChange = (newPersonality: Personality) => {
     setPersonality(newPersonality);
+    setShowPersonalityMenu(false);
     showSuccess(`Vertex personality core set to ${newPersonality.toUpperCase()}`);
     
     setMessages((prev) => {
@@ -279,10 +275,9 @@ const Index = () => {
 
     let currentStepIndex = 0;
     
-    // Determine speed based on category (generation tasks are ultra-fast)
     const isGeneration = category === "image_generation" || category === "video_generation";
-    const stepDelay = isGeneration ? 80 : 400; // 80ms for generation, 400ms for standard tasks
-    const streamDelay = isGeneration ? 5 : 25; // 5ms per word for generation, 25ms for standard tasks
+    const stepDelay = isGeneration ? 80 : 400;
+    const streamDelay = isGeneration ? 5 : 25;
 
     const runNextStep = () => {
       if (currentStepIndex < stepsList.length) {
@@ -367,7 +362,6 @@ const Index = () => {
     const lowerText = text.toLowerCase();
 
     if (lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) {
-      // AI Video Generation
       const generatedVidUrl = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32156-large.mp4";
       simulateStreamingResponse(
         text,
@@ -383,7 +377,6 @@ const Index = () => {
         generatedVidUrl
       );
     } else if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint")) {
-      // AI Image Generation
       const randomId = Math.floor(Math.random() * 1000);
       const generatedImgUrl = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80&sig=${randomId}`;
       simulateStreamingResponse(
@@ -399,7 +392,6 @@ const Index = () => {
         generatedImgUrl
       );
     } else if (selectedDoc) {
-      // Document Analysis
       simulateStreamingResponse(
         text || "Analyze document",
         [
@@ -483,7 +475,7 @@ const Index = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
-        setSelectedDoc(null); // Clear doc if image selected
+        setSelectedDoc(null);
         showSuccess("Image attached successfully.");
       };
       reader.readAsDataURL(file);
@@ -497,7 +489,7 @@ const Index = () => {
         name: file.name,
         size: `${(file.size / 1024).toFixed(1)} KB`,
       });
-      setSelectedImage(null); // Clear image if doc selected
+      setSelectedImage(null);
       showSuccess("Document attached successfully.");
     }
   };
@@ -514,7 +506,6 @@ const Index = () => {
         setActiveTab("voice");
         showSuccess("Voice mode active. Speak now.");
       } else {
-        // Fallback simulation if SpeechRecognition is not supported
         setIsListening(true);
         setActiveTab("voice");
         showSuccess("Voice mode active. Speak now.");
@@ -541,16 +532,26 @@ const Index = () => {
     showSuccess("Chat history exported successfully!");
   };
 
+  const getPersonalityIcon = (p: Personality) => {
+    switch (p) {
+      case "sarcastic": return <Smile className="w-4 h-4" />;
+      case "cyberpunk": return <Terminal className="w-4 h-4" />;
+      case "hype": return <Flame className="w-4 h-4" />;
+      default: return <Cpu className="w-4 h-4" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col md:flex-row">
-      {/* Sidebar / Navigation */}
-      <div className="w-full md:w-80 bg-zinc-950 border-b md:border-b-0 md:border-r border-white/10 p-6 flex flex-col justify-between gap-6">
+      
+      {/* Left Sidebar (Only visible on PC/Desktop browsers) */}
+      <div className="hidden md:flex md:w-64 lg:w-72 bg-zinc-950 border-r border-white/10 p-6 flex-col justify-between shrink-0">
         <div className="space-y-8">
           {/* Brand Header */}
           <div className="flex items-center gap-3">
             <VertexLogo size="sm" />
             <div>
-              <h1 className="text-xl font-bold tracking-widest uppercase">Vertex</h1>
+              <h1 className="text-lg font-bold tracking-widest uppercase">Vertex</h1>
               <p className="text-[10px] text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
             </div>
           </div>
@@ -559,50 +560,20 @@ const Index = () => {
           <div className="space-y-2 bg-white/5 p-3.5 rounded-2xl border border-white/10">
             <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Personality Core</p>
             <div className="grid grid-cols-2 gap-1.5">
-              <button
-                onClick={() => handlePersonalityChange("autonomous")}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                  personality === "autonomous"
-                    ? "bg-white text-black font-semibold"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <Cpu className="w-3.5 h-3.5" />
-                <span>Auto</span>
-              </button>
-              <button
-                onClick={() => handlePersonalityChange("sarcastic")}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                  personality === "sarcastic"
-                    ? "bg-white text-black font-semibold"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <Smile className="w-3.5 h-3.5" />
-                <span>Sarcastic</span>
-              </button>
-              <button
-                onClick={() => handlePersonalityChange("cyberpunk")}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                  personality === "cyberpunk"
-                    ? "bg-white text-black font-semibold"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Cyber</span>
-              </button>
-              <button
-                onClick={() => handlePersonalityChange("hype")}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                  personality === "hype"
-                    ? "bg-white text-black font-semibold"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <Flame className="w-3.5 h-3.5" />
-                <span>Hype</span>
-              </button>
+              {(["autonomous", "sarcastic", "cyberpunk", "hype"] as Personality[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => handlePersonalityChange(p)}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                    personality === p
+                      ? "bg-white text-black font-semibold"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {getPersonalityIcon(p)}
+                  <span className="capitalize">{p}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -690,46 +661,92 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-black relative overflow-hidden">
-        {/* Top Status Bar */}
-        <div className="h-14 border-b border-white/10 px-6 flex items-center justify-between bg-zinc-950/50 backdrop-blur-md z-10">
+      {/* Main Content Area (Responsive full-screen on PC, mobile-optimized on phones) */}
+      <div className="flex-1 flex flex-col bg-black relative overflow-hidden h-screen">
+        
+        {/* Top Status Bar / Header */}
+        <div className="h-14 border-b border-white/10 px-6 flex items-center justify-between bg-zinc-950/50 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono tracking-wider text-white/60 uppercase">Vertex Core: Online</span>
+            {/* Mobile-only logo */}
+            <div className="md:hidden flex items-center gap-2">
+              <VertexLogo size="sm" />
+              <div>
+                <h1 className="text-sm font-bold tracking-wider uppercase">Vertex</h1>
+                <p className="text-[8px] text-white/40 tracking-wider uppercase">v1.0</p>
+              </div>
+            </div>
+            {/* Desktop-only status */}
+            <div className="hidden md:flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono tracking-wider text-white/60 uppercase">Vertex Core: Online</span>
+            </div>
           </div>
+
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleExportChat}
-              title="Export Chat History"
-              className="text-xs font-mono text-white/60 hover:text-white flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 transition-all"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export</span>
-            </button>
-            <button
-              onClick={() => setIsVoiceMuted(!isVoiceMuted)}
-              className="text-white/60 hover:text-white transition-colors"
-            >
-              {isVoiceMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-            <span className="text-xs font-mono text-white/40">LATENCY: 14ms</span>
+            {/* Mobile-only Personality Dropdown */}
+            <div className="relative md:hidden">
+              <button
+                onClick={() => setShowPersonalityMenu(!showPersonalityMenu)}
+                className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-all"
+              >
+                {getPersonalityIcon(personality)}
+                <span>{personality}</span>
+              </button>
+
+              {showPersonalityMenu && (
+                <div className="absolute right-0 mt-2 w-36 bg-zinc-900 border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1">
+                  {(["autonomous", "sarcastic", "cyberpunk", "hype"] as Personality[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => handlePersonalityChange(p)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                        personality === p
+                          ? "bg-white text-black font-semibold"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {getPersonalityIcon(p)}
+                      <span className="capitalize">{p}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop-only controls */}
+            <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={handleExportChat}
+                title="Export Chat History"
+                className="text-xs font-mono text-white/60 hover:text-white flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 transition-all"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export</span>
+              </button>
+              <button
+                onClick={() => setIsVoiceMuted(!isVoiceMuted)}
+                className="text-white/60 hover:text-white transition-colors"
+              >
+                {isVoiceMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <span className="text-xs font-mono text-white/40">LATENCY: 14ms</span>
+            </div>
           </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-28 bg-black">
           {activeTab === "chat" && (
-            <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-6">
+            <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-4">
               {/* Messages Container */}
-              <div className="flex-1 space-y-6 min-h-[400px]">
+              <div className="space-y-5">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex flex-col gap-2 group ${msg.sender === "user" ? "items-end" : "items-start"}`}
+                    className={`flex flex-col gap-1.5 group ${msg.sender === "user" ? "items-end" : "items-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed transition-all flex flex-col gap-3 ${
+                      className={`max-w-[90%] md:max-w-[85%] p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed transition-all flex flex-col gap-2.5 ${
                         msg.sender === "user"
                           ? "bg-white text-black font-medium rounded-tr-none"
                           : "bg-zinc-900 text-white border border-white/10 rounded-tl-none"
@@ -739,7 +756,7 @@ const Index = () => {
                         <img
                           src={msg.image}
                           alt="Sent attachment"
-                          className="max-w-full max-h-64 rounded-xl object-cover border border-white/10"
+                          className="max-w-full max-h-48 md:max-h-64 rounded-xl object-cover border border-white/10"
                         />
                       )}
                       {msg.document && (
@@ -759,28 +776,28 @@ const Index = () => {
 
                     {/* Render Generated Image if present */}
                     {msg.generatedImage && (
-                      <div className="w-full max-w-[85%] mt-2">
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <GeneratedImage prompt={msg.text} imageUrl={msg.generatedImage} />
                       </div>
                     )}
 
                     {/* Render Generated Video if present */}
                     {msg.generatedVideo && (
-                      <div className="w-full max-w-[85%] mt-2">
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <GeneratedVideo prompt={msg.text} videoUrl={msg.generatedVideo} />
                       </div>
                     )}
 
                     {/* Render steps if present */}
                     {msg.steps && msg.steps.length > 0 && (
-                      <div className="w-full max-w-[85%] mt-2">
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <ReasoningSteps steps={msg.steps} />
                       </div>
                     )}
 
                     {/* Render products if present */}
                     {msg.products && msg.products.length > 0 && (
-                      <div className="w-full max-w-[85%] mt-2">
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <ProductComparer
                           products={msg.products}
                           onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
@@ -792,14 +809,14 @@ const Index = () => {
 
                 {/* Active Reasoning Steps (Streaming) */}
                 {isStreaming && currentSteps.length > 0 && (
-                  <div className="w-full max-w-[85%]">
+                  <div className="w-full max-w-[90%] md:max-w-[85%]">
                     <ReasoningSteps steps={currentSteps} />
                   </div>
                 )}
 
                 {/* Active Product Comparison (Streaming) */}
                 {isStreaming && currentProducts.length > 0 && (
-                  <div className="w-full max-w-[85%]">
+                  <div className="w-full max-w-[90%] md:max-w-[85%]">
                     <ProductComparer
                       products={currentProducts}
                       onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
@@ -812,121 +829,36 @@ const Index = () => {
 
               {/* Default Prompts (Only show if conversation is fresh) */}
               {messages.length === 1 && !isStreaming && (
-                <div className="space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-white/40">Suggested Automations</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2.5 mt-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Suggested Automations</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {DEFAULT_PROMPTS.map((prompt, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(prompt.text)}
-                        className="flex items-center justify-between p-4 bg-zinc-950 hover:bg-white/5 border border-white/10 hover:border-white/30 rounded-2xl text-left transition-all group"
+                        className="flex items-center justify-between p-3.5 bg-zinc-950 hover:bg-white/5 border border-white/10 hover:border-white/30 rounded-xl text-left transition-all group"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg">{prompt.icon}</span>
-                          <span className="text-sm text-white/80 group-hover:text-white font-medium">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">{prompt.icon}</span>
+                          <span className="text-xs md:text-sm text-white/80 group-hover:text-white font-medium">
                             {prompt.text}
                           </span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-
-              {/* Input Bar */}
-              <div className="space-y-3">
-                {/* Image Preview Area */}
-                {selectedImage && (
-                  <div className="relative inline-block bg-zinc-900 p-2 rounded-2xl border border-white/10">
-                    <img
-                      src={selectedImage}
-                      alt="Preview"
-                      className="w-24 h-24 object-cover rounded-xl border border-white/10"
-                    />
-                    <button
-                      onClick={() => setSelectedImage(null)}
-                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-
-                {/* Document Preview Area */}
-                {selectedDoc && (
-                  <DocumentPreview
-                    name={selectedDoc.name}
-                    size={selectedDoc.size}
-                    onRemove={() => setSelectedDoc(null)}
-                  />
-                )}
-
-                <div className="relative flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 focus-within:border-white/30 transition-all">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageSelect}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <input
-                    type="file"
-                    ref={docInputRef}
-                    onChange={handleDocSelect}
-                    accept=".pdf,.txt,.doc,.docx"
-                    className="hidden"
-                  />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Attach Image"
-                    className="p-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => docInputRef.current?.click()}
-                    title="Attach Document (PDF, TXT, etc.)"
-                    className="p-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </button>
-                  <input
-                    type="text"
-                    placeholder="Ask Vertex to automate, analyze files, or generate images/videos..."
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
-                    className="flex-1 bg-transparent text-white placeholder-white/40 text-sm px-3 py-2 focus:outline-none"
-                    disabled={isStreaming}
-                  />
-                  <button
-                    onClick={handleVoiceToggle}
-                    title="Voice Input"
-                    className={`p-2.5 rounded-xl transition-all ${
-                      isListening ? "bg-red-500 text-white animate-pulse" : "text-white/60 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <Mic className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleSendMessage(inputText)}
-                    disabled={isStreaming || (!inputText.trim() && !selectedImage && !selectedDoc)}
-                    className="p-2.5 bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 rounded-xl transition-all"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
           {activeTab === "voice" && (
-            <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center gap-12 py-12">
-              <div className="text-center space-y-3">
-                <h2 className="text-2xl font-bold tracking-widest uppercase">Voice Interface</h2>
-                <p className="text-sm text-white/60">
-                  {isListening ? "Vertex is listening to your command..." : "Tap the core to begin speaking"}
+            <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center gap-8 py-8">
+              <div className="text-center space-y-2">
+                <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase">Voice Interface</h2>
+                <p className="text-xs text-white/60">
+                  {isListening ? "Vertex is listening..." : "Tap the core to speak"}
                 </p>
               </div>
 
@@ -934,8 +866,8 @@ const Index = () => {
                 onClick={handleVoiceToggle}
                 className="relative group flex items-center justify-center"
               >
-                <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all duration-500" />
-                <VertexLogo size="lg" />
+                <div className="absolute inset-0 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all duration-500" />
+                <VertexLogo size="md" />
               </button>
 
               <div className="w-full">
@@ -943,7 +875,7 @@ const Index = () => {
               </div>
 
               {isListening && (
-                <div className="text-xs font-mono text-white/40 animate-pulse bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                <div className="text-[10px] font-mono text-white/40 animate-pulse bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
                   TRANSCRIPTION: "Order me the cheapest pepperoni pizza..."
                 </div>
               )}
@@ -963,32 +895,32 @@ const Index = () => {
           )}
 
           {activeTab === "settings" && (
-            <div className="max-w-2xl mx-auto space-y-8 text-white">
-              <div className="border-b border-white/10 pb-4">
-                <h2 className="text-lg font-semibold tracking-wider uppercase">System Settings</h2>
-                <p className="text-xs text-white/40">Configure your autonomous Vertex OS environment</p>
+            <div className="max-w-2xl mx-auto space-y-6 text-white">
+              <div className="border-b border-white/10 pb-3">
+                <h2 className="text-base font-semibold tracking-wider uppercase">System Settings</h2>
+                <p className="text-[10px] text-white/40">Configure your autonomous Vertex OS</p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {/* API Configuration */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/60">API & Integrations</h3>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-4">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60">API & Integrations</h3>
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">OpenAI Reasoning Engine</p>
-                        <p className="text-xs text-white/40">Used for multi-step task planning</p>
+                        <p className="text-xs md:text-sm font-medium">OpenAI Reasoning Engine</p>
+                        <p className="text-[10px] text-white/40">Used for multi-step task planning</p>
                       </div>
-                      <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                      <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[8px] font-semibold uppercase tracking-wider">
                         Connected
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">Web Browsing Agent</p>
-                        <p className="text-xs text-white/40">Allows Vertex to search and compare prices</p>
+                        <p className="text-xs md:text-sm font-medium">Web Browsing Agent</p>
+                        <p className="text-[10px] text-white/40">Allows Vertex to search and compare prices</p>
                       </div>
-                      <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                      <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[8px] font-semibold uppercase tracking-wider">
                         Active
                       </span>
                     </div>
@@ -996,42 +928,201 @@ const Index = () => {
                 </div>
 
                 {/* Security & Privacy */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/60">Security & Privacy</h3>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-4">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60">Security & Privacy</h3>
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">Biometric Authentication</p>
-                        <p className="text-xs text-white/40">Require FaceID/TouchID before executing purchases</p>
+                        <p className="text-xs md:text-sm font-medium">Biometric Authentication</p>
+                        <p className="text-[10px] text-white/40">Require FaceID/TouchID before executing purchases</p>
                       </div>
                       <button
                         onClick={() => showSuccess("Biometric authentication updated.")}
-                        className="px-3 py-1 bg-white text-black rounded-lg text-xs font-semibold"
+                        className="px-2.5 py-1 bg-white text-black rounded-lg text-[10px] font-semibold"
                       >
                         Enabled
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">Clear Local Cache</p>
-                        <p className="text-xs text-white/40">Delete all offline conversation history</p>
+                        <p className="text-xs md:text-sm font-medium">Clear Local Cache</p>
+                        <p className="text-[10px] text-white/40">Delete all offline conversation history</p>
                       </div>
                       <button
                         onClick={() => {
                           setMessages([messages[0]]);
                           showSuccess("Local cache cleared successfully.");
                         }}
-                        className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-lg text-xs font-semibold transition-all"
+                        className="px-2.5 py-1 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-lg text-[10px] font-semibold transition-all"
                       >
                         Clear Cache
                       </button>
                     </div>
                   </div>
                 </div>
+
+                {/* Export & Logout (Mobile only, desktop has it in sidebar) */}
+                <div className="pt-2 space-y-2 md:hidden">
+                  <button
+                    onClick={handleExportChat}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold transition-all"
+                  >
+                    <Download className="w-4 h-4" /> Export Chat History
+                  </button>
+                  <button
+                    onClick={() => showSuccess("Logged out of Vertex OS.")}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 rounded-xl text-xs font-semibold transition-all"
+                  >
+                    <LogOut className="w-4 h-4" /> Log Out
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Fixed Bottom Input Bar (Only visible on Chat tab) */}
+        {activeTab === "chat" && (
+          <div className="absolute bottom-16 md:bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black via-black/95 to-transparent z-10 space-y-2">
+            <div className="max-w-3xl mx-auto space-y-2">
+              {/* Image Preview Area */}
+              {selectedImage && (
+                <div className="relative inline-block bg-zinc-900 p-1.5 rounded-xl border border-white/10">
+                  <img
+                    src={selectedImage}
+                    alt="Preview"
+                    className="w-16 h-16 object-cover rounded-lg border border-white/10"
+                  />
+                  <button
+                    onClick={() => setSelectedImage(null)}
+                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Document Preview Area */}
+              {selectedDoc && (
+                <DocumentPreview
+                  name={selectedDoc.name}
+                  size={selectedDoc.size}
+                  onRemove={() => setSelectedDoc(null)}
+                />
+              )}
+
+              <div className="relative flex items-center gap-1.5 bg-zinc-950 border border-white/10 rounded-xl p-1.5 md:p-2 focus-within:border-white/30 transition-all">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <input
+                  type="file"
+                  ref={docInputRef}
+                  onChange={handleDocSelect}
+                  accept=".pdf,.txt,.doc,.docx"
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Attach Image"
+                  className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                >
+                  <ImageIcon className="w-3.5 h-3.5 md:w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => docInputRef.current?.click()}
+                  title="Attach Document"
+                  className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                >
+                  <FileText className="w-3.5 h-3.5 md:w-4 h-4" />
+                </button>
+                <input
+                  type="text"
+                  placeholder="Ask Vertex to automate..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
+                  className="flex-1 bg-transparent text-white placeholder-white/40 text-xs md:text-sm px-2 py-1.5 focus:outline-none"
+                  disabled={isStreaming}
+                />
+                <button
+                  onClick={handleVoiceToggle}
+                  title="Voice Input"
+                  className={`p-2 rounded-lg transition-all ${
+                    isListening ? "bg-red-500 text-white animate-pulse" : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <Mic className="w-3.5 h-3.5 md:w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleSendMessage(inputText)}
+                  disabled={isStreaming || (!inputText.trim() && !selectedImage && !selectedDoc)}
+                  className="p-2 bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 rounded-lg transition-all"
+                >
+                  <Send className="w-3.5 h-3.5 md:w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fixed Bottom Tab Bar (Only visible on Mobile devices) */}
+        <div className="flex md:hidden absolute bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-white/10 items-center justify-around px-2 z-20 shrink-0">
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === "chat" ? "text-white scale-105" : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Chat</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("voice")}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === "voice" ? "text-white scale-105" : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Mic className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Voice</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("memory")}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === "memory" ? "text-white scale-105" : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Brain className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Memory</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("tasks")}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === "tasks" ? "text-white scale-105" : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Calendar className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Tasks</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === "settings" ? "text-white scale-105" : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Settings</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );
