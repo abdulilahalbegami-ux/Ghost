@@ -982,6 +982,8 @@ const Index = () => {
                       <option value="GPT-4o Reasoning Core">GPT-4o Reasoning Core</option>
                       <option value="Claude 3.5 Sonnet Agent">Claude 3.5 Sonnet Agent</option>
                       <option value="DeepSeek R1 Thinker">DeepSeek R1 Thinker</option>
+                      <option value="Gemini 1.5 Pro Ultra">Gemini 1.5 Pro Ultra</option>
+                      <option value="Llama 3.1 405B Core">Llama 3.1 405B Core</option>
                     </select>
                   </div>
 
