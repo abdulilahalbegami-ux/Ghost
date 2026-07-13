@@ -93,10 +93,10 @@ const Index = () => {
 
   // Custom personality state defined by the user
   const [customPersonality, setCustomPersonality] = useState<string>(
-    "An efficient, professional autonomous AI assistant who is highly capable and concise."
+    "An efficient, professional autonomous AI assistant who is highly capable and helpful."
   );
   const [personalityInput, setPersonalityInput] = useState<string>(
-    "An efficient, professional autonomous AI assistant who is highly capable and concise."
+    "An efficient, professional autonomous AI assistant who is highly capable and helpful."
   );
 
   // --- Comprehensive Settings States ---
@@ -340,7 +340,7 @@ const Index = () => {
 
   // Dynamically adapt responses based on the user's custom personality description
   const getPersonalityResponse = (category: string, userText: string): string => {
-    const desc = isLoggedIn ? customPersonality.toLowerCase() : "An efficient, professional autonomous AI assistant who is highly capable and concise.".toLowerCase();
+    const desc = isLoggedIn ? customPersonality.toLowerCase() : "An efficient, professional autonomous AI assistant who is highly capable and helpful.".toLowerCase();
 
     // Helper to apply stylistic flavor based on custom personality keywords
     const applyFlavor = (baseText: string): string => {
@@ -395,6 +395,21 @@ const Index = () => {
 
     if (category === "messages") {
       return applyFlavor("You have 5 unread messages. The most urgent is from Sarah asking for the project update. I have drafted a professional reply: 'Hi Sarah, I am currently finalizing the details and will send over the complete update by tomorrow morning. Best, [Name]'. Shall I send this?");
+    }
+
+    // Conversational fallback responses based on user input
+    const lower = userText.toLowerCase();
+    if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey")) {
+      return applyFlavor("Hello! I am Vertex, your autonomous AI assistant. How can I help you automate your tasks, analyze documents, or generate media today?");
+    }
+    if (lower.includes("who are you") || lower.includes("what is vertex") || lower.includes("what can you do")) {
+      return applyFlavor("I am Vertex, a fully autonomous AI operating system. I can help you with complex multi-step reasoning, automated task planning, price comparisons, document analysis, and high-fidelity image or video generation. Try asking me to 'Order me the cheapest pepperoni pizza' or 'Generate a video of a futuristic neon highway'!");
+    }
+    if (lower.includes("thank")) {
+      return applyFlavor("You're very welcome! It is my pleasure to assist you. Let me know if there's anything else I can automate for you.");
+    }
+    if (lower.includes("weather")) {
+      return applyFlavor("I've checked the local meteorological feeds. The current weather is clear with a pleasant breeze, perfect for outdoor activities. Would you like me to monitor this or schedule any outdoor tasks?");
     }
 
     return applyFlavor(`I have processed your request: "${userText}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`);
