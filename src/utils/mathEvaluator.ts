@@ -1,15 +1,16 @@
 export function evaluateMathExpression(text: string): string | null {
   const cleanText = text.toLowerCase().trim();
   
-  // Replace word operators with standard symbols
   let expression = cleanText
+    .replace(/what's/g, "")
+    .replace(/whats/g, "")
+    .replace(/what is/g, "")
+    .replace(/calculate/g, "")
     .replace(/plus/g, "+")
     .replace(/minus/g, "-")
     .replace(/times/g, "*")
     .replace(/multiplied by/g, "*")
     .replace(/divided by/g, "/")
-    .replace(/what is/g, "")
-    .replace(/calculate/g, "")
     .replace(/=/g, "")
     .replace(/\?/g, "")
     .trim();
@@ -33,13 +34,13 @@ export function evaluateMathExpression(text: string): string | null {
         result = num1 * num2;
         break;
       case "/":
-        if (num2 === 0) return "Division by zero is mathematically undefined.";
+        if (num2 === 0) return "Division by zero is undefined.";
         result = num1 / num2;
         break;
       default:
         return null;
     }
-    return `The calculation is complete: ${num1} ${op === "*" ? "×" : op === "/" ? "÷" : op} ${num2} equals ${result}.`;
+    return `${result}`;
   }
   return null;
 }
