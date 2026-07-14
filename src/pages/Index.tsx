@@ -18,11 +18,9 @@ import {
   X,
   Cpu,
   Download,
-  Sparkle,
   ImageIcon,
   FileText,
   Shield,
-  Eye,
   Bell,
   Palette,
   Globe,
@@ -30,7 +28,6 @@ import {
   Star,
   Trash2,
   Lock,
-  Sliders,
   Check,
   Plus,
   Pin,
@@ -85,7 +82,7 @@ const Index = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // --- Authentication State ---
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Default to Guest Mode
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [authEmail, setAuthEmail] = useState("");
@@ -101,38 +98,31 @@ const Index = () => {
   );
 
   // --- Comprehensive Settings States ---
-  // 👤 Account
   const [username, setUsername] = useState("Agent Alpha");
   const [password, setPassword] = useState("••••••••••••");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [newUsername, setNewUsername] = useState("Agent Alpha");
 
-  // 🤖 AI
   const [aiModel, setAiModel] = useState("GPT-4o Reasoning Core");
   const [responseLength, setResponseLength] = useState<"short" | "balanced" | "detailed">("balanced");
-  const [creativity, setCreativity] = useState(60); // 0 to 100
+  const [creativity, setCreativity] = useState(60);
   const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(true);
   const [isSaveHistoryEnabled, setIsSaveHistoryEnabled] = useState(true);
   const [isMemoryEnabled, setIsMemoryEnabled] = useState(true);
 
-  // 🎨 Appearance
   const [themeMode, setThemeMode] = useState<"dark" | "light" | "system">("dark");
-  const [accentColor, setAccentColor] = useState("#ffffff"); // Hex color picker
+  const [accentColor, setAccentColor] = useState("#ffffff");
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
 
-  // 🔔 Notifications
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
-  // 🔒 Privacy
   const [isDataCollectionEnabled, setIsDataCollectionEnabled] = useState(false);
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
-  // 🌍 Language
   const [appLanguage, setAppLanguage] = useState("English (US)");
   const [aiLanguage, setAiLanguage] = useState("Auto-detect");
 
-  // ⭐ Nice extras
   const [isHapticEnabled, setIsHapticEnabled] = useState(true);
   const [voiceSelection, setVoiceSelection] = useState("Male Neural (US)");
   const [defaultOpeningPage, setDefaultOpeningPage] = useState<"new-chat" | "recent-chats">("new-chat");
@@ -181,7 +171,6 @@ const Index = () => {
     } else if (themeMode === "light") {
       root.classList.remove("dark");
     } else {
-      // system
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       if (systemTheme === "dark") {
         root.classList.add("dark");
@@ -223,7 +212,6 @@ const Index = () => {
     }
   }, []);
 
-  // Helper to update messages for the active chat
   const updateActiveChatMessages = (updater: Message[] | ((prev: Message[]) => Message[])) => {
     setChats((prevChats) =>
       prevChats.map((c) => {
@@ -297,7 +285,6 @@ const Index = () => {
     setCustomPersonality(personalityInput);
     showSuccess("Vertex personality core updated successfully!");
     
-    // Add a system message to the chat indicating the personality change
     updateActiveChatMessages((prev) => [
       ...prev,
       {
@@ -357,11 +344,9 @@ const Index = () => {
     }
   };
 
-  // Dynamically adapt responses based on the user's custom personality description
   const getPersonalityResponse = (category: string, userText: string): string => {
     const desc = isLoggedIn ? customPersonality.toLowerCase() : "An efficient, professional autonomous AI assistant who is highly capable and helpful.".toLowerCase();
 
-    // Helper to apply stylistic flavor based on custom personality keywords
     const applyFlavor = (baseText: string): string => {
       if (desc.includes("pirate")) {
         return `Ahoy, matey! ${baseText.replace(/\./g, "!")} Arrr, let's get this treasure!`;
@@ -422,7 +407,6 @@ const Index = () => {
       return applyFlavor(mathResult);
     }
 
-    // Conversational fallback responses based on user input
     const lower = userText.toLowerCase().trim();
     if (
       lower === "yo" ||
@@ -534,7 +518,6 @@ const Index = () => {
 
     const lowerText = text.toLowerCase();
 
-    // Exclusive Feature Check: Video Generation
     if ((lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) && !isLoggedIn) {
       setAuthMode("signin");
       setShowAuthModal(true);
@@ -542,7 +525,6 @@ const Index = () => {
       return;
     }
 
-    // Auto-name the chat if it's currently named "New Chat"
     if (activeChat.title === "New Chat" && text.trim()) {
       setChats((prev) =>
         prev.map((c) =>
@@ -567,7 +549,6 @@ const Index = () => {
     setSelectedImage(null);
     setSelectedDoc(null);
 
-    // Check for math queries first
     const isMath = evaluateMathExpression(text) !== null;
 
     if (isMath) {
@@ -744,7 +725,6 @@ const Index = () => {
     }, 1500);
   };
 
-  // Sidebar Content Component (Reused for Desktop and Mobile Drawer)
   const SidebarContent = () => {
     const pinnedChats = chats.filter((c) => c.isPinned);
     const recentChats = chats.filter((c) => !c.isPinned);
@@ -752,7 +732,6 @@ const Index = () => {
     return (
       <div className="flex flex-col h-full justify-between">
         <div className="space-y-6 flex-1 flex flex-col min-h-0">
-          {/* Brand Header */}
           <div className="flex items-center gap-3 shrink-0">
             <VertexLogo size="sm" />
             <div>
@@ -761,7 +740,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* New Chat Button */}
           <button
             onClick={handleNewChat}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
@@ -769,7 +747,6 @@ const Index = () => {
             <Plus className="w-4 h-4" /> New Chat
           </button>
 
-          {/* Conversations List */}
           <div className="flex-1 flex flex-col min-h-0 space-y-4">
             <div className="flex items-center justify-between shrink-0">
               <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/40">Conversations</p>
@@ -777,7 +754,6 @@ const Index = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
-              {/* Pinned Chats */}
               {pinnedChats.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400/60 px-2 flex items-center gap-1">
@@ -822,7 +798,6 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Recent Chats */}
               <div className="space-y-1">
                 {pinnedChats.length > 0 && (
                   <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/30 px-2">Recent</p>
@@ -867,7 +842,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
           <nav className="space-y-1 shrink-0 border-t border-zinc-200 dark:border-white/5 pt-4">
             <button
               onClick={() => {
@@ -946,7 +920,6 @@ const Index = () => {
           </nav>
         </div>
 
-        {/* User Profile Footer */}
         <div className="border-t border-zinc-200 dark:border-white/10 pt-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/20 flex items-center justify-center">
@@ -988,20 +961,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-white font-sans flex flex-col md:flex-row transition-colors duration-200">
       
-      {/* Left Sidebar (Only visible on PC/Desktop browsers) */}
       <div className="hidden md:flex md:w-64 lg:w-72 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-white/10 p-6 flex-col justify-between shrink-0 h-screen">
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar Drawer (Slide-over menu) */}
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Backdrop */}
           <div
             onClick={() => setIsMobileSidebarOpen(false)}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm"
           />
-          {/* Drawer Content */}
           <div className="relative w-72 max-w-xs bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-white/10 p-6 flex flex-col h-full z-10 animate-in slide-in-from-left duration-200">
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
@@ -1016,13 +985,10 @@ const Index = () => {
         </div>
       )}
 
-      {/* Main Content Area (Responsive full-screen on PC, mobile-optimized on phones) */}
       <div className="flex-1 flex flex-col bg-zinc-50 dark:bg-black relative overflow-hidden h-screen transition-colors duration-200">
         
-        {/* Top Status Bar / Header */}
         <div className="h-14 border-b border-zinc-200 dark:border-white/10 px-6 flex items-center justify-between bg-white/80 dark:bg-zinc-950/50 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-2">
-            {/* Mobile-only Menu Toggle */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className="md:hidden p-1.5 text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-all"
@@ -1030,7 +996,6 @@ const Index = () => {
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Mobile-only logo */}
             <div className="md:hidden flex items-center gap-2">
               <VertexLogo size="sm" />
               <div>
@@ -1038,7 +1003,6 @@ const Index = () => {
                 <p className="text-[8px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">v1.0</p>
               </div>
             </div>
-            {/* Desktop-only status */}
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Vertex Core: Online</span>
@@ -1046,7 +1010,6 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Desktop-only controls */}
             <div className="hidden md:flex items-center gap-4">
               <button
                 onClick={handleExportChat}
@@ -1068,11 +1031,9 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-28 bg-zinc-50 dark:bg-black transition-colors duration-200">
           {activeTab === "chat" && (
             <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-4">
-              {/* Messages Container */}
               <div className="space-y-5">
                 {activeMessages.map((msg) => (
                   <div
@@ -1103,33 +1064,28 @@ const Index = () => {
                       <p>{msg.text}</p>
                     </div>
 
-                    {/* Chat Actions (Copy, Share, TTS) */}
                     {!msg.isStreaming && (
                       <ChatActions text={msg.text} />
                     )}
 
-                    {/* Render Generated Image if present */}
                     {msg.generatedImage && (
                       <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <GeneratedImage prompt={msg.text} imageUrl={msg.generatedImage} />
                       </div>
                     )}
 
-                    {/* Render Generated Video if present */}
                     {msg.generatedVideo && (
                       <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <GeneratedVideo prompt={msg.text} videoUrl={msg.generatedVideo} />
                       </div>
                     )}
 
-                    {/* Render steps if present */}
                     {msg.steps && msg.steps.length > 0 && (
                       <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <ReasoningSteps steps={msg.steps} />
                       </div>
                     )}
 
-                    {/* Render products if present */}
                     {msg.products && msg.products.length > 0 && (
                       <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <ProductComparer
@@ -1141,14 +1097,12 @@ const Index = () => {
                   </div>
                 ))}
 
-                {/* Active Reasoning Steps (Streaming) */}
                 {isStreaming && currentSteps.length > 0 && (
                   <div className="w-full max-w-[90%] md:max-w-[85%]">
                     <ReasoningSteps steps={currentSteps} />
                   </div>
                 )}
 
-                {/* Active Product Comparison (Streaming) */}
                 {isStreaming && currentProducts.length > 0 && (
                   <div className="w-full max-w-[90%] md:max-w-[85%]">
                     <ProductComparer
@@ -1161,7 +1115,6 @@ const Index = () => {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Default Prompts (Only show if conversation is fresh) */}
               {activeMessages.length === 1 && !isStreaming && (
                 <div className="space-y-2.5 mt-4">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/40">Suggested Automations</p>
@@ -1257,7 +1210,6 @@ const Index = () => {
                 <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Vertex OS environment</p>
               </div>
 
-              {/* Guest Mode Sign In Prompt */}
               {!isLoggedIn && (
                 <div className="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
@@ -1277,7 +1229,6 @@ const Index = () => {
                 </div>
               )}
 
-              {/* 👤 Account Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <User className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1287,7 +1238,6 @@ const Index = () => {
                 <div className="space-y-4 pt-2">
                   {isLoggedIn ? (
                     <>
-                      {/* Profile / Username */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <p className="text-xs font-semibold">Profile Username</p>
@@ -1328,7 +1278,6 @@ const Index = () => {
                         )}
                       </div>
 
-                      {/* Change Password */}
                       <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                         <div>
                           <p className="text-xs font-semibold">Change Password</p>
@@ -1348,7 +1297,6 @@ const Index = () => {
                         </button>
                       </div>
 
-                      {/* Delete Account & Sign Out */}
                       <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                         <button
                           onClick={() => {
@@ -1391,7 +1339,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* 🤖 AI Engine Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Cpu className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1399,7 +1346,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* Custom Personality Core */}
                   <div className="space-y-2 relative">
                     {!isLoggedIn && (
                       <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center z-10 rounded-xl">
@@ -1428,7 +1374,6 @@ const Index = () => {
                     </form>
                   </div>
 
-                  {/* AI Model Selection */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">AI Model</p>
@@ -1450,7 +1395,6 @@ const Index = () => {
                     </select>
                   </div>
 
-                  {/* Response Length */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Response Length</p>
@@ -1474,7 +1418,6 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Creativity Slider */}
                   <div className="space-y-1.5 border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -1493,7 +1436,6 @@ const Index = () => {
                     />
                   </div>
 
-                  {/* Web Search Toggle */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Web Search Agent</p>
@@ -1516,7 +1458,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Save Chat History Toggle */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Save Chat History</p>
@@ -1539,7 +1480,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Memory Toggle */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3 relative">
                     {!isLoggedIn && (
                       <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
@@ -1570,7 +1510,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* 🎨 Appearance Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Palette className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1578,7 +1517,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* Theme Mode */}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">Theme Mode</p>
@@ -1602,7 +1540,6 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Accent Color Picker */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Accent Color</p>
@@ -1622,7 +1559,6 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Font Size */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Font Size</p>
@@ -1648,7 +1584,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* 🔔 Notifications Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Bell className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1656,7 +1591,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* Enable Notifications */}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">Enable Notifications</p>
@@ -1679,7 +1613,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Sound Toggle */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Sound Effects</p>
@@ -1704,7 +1637,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* 🔒 Privacy & Security Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Lock className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1712,7 +1644,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* Clear All Chats */}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">Clear All Chats</p>
@@ -1731,7 +1662,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Export Chats */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3 relative">
                     {!isLoggedIn && (
                       <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
@@ -1751,7 +1681,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Data Collection Toggle */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Anonymous Data Collection</p>
@@ -1774,7 +1703,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Two-Factor Authentication */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Two-Factor Authentication (2FA)</p>
@@ -1799,7 +1727,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* 🌍 Language Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Globe className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1807,7 +1734,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* App Language */}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">App Language</p>
@@ -1828,7 +1754,6 @@ const Index = () => {
                     </select>
                   </div>
 
-                  {/* AI Response Language */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">AI Response Language</p>
@@ -1852,7 +1777,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* ⭐ Nice Extras Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Star className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1860,7 +1784,6 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  {/* Haptic Feedback */}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">Haptic Feedback</p>
@@ -1883,7 +1806,6 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {/* Voice Selection */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Voice Selection (TTS)</p>
@@ -1904,7 +1826,6 @@ const Index = () => {
                     </select>
                   </div>
 
-                  {/* Default Opening Page */}
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Default Opening Page</p>
@@ -1925,7 +1846,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* ℹ️ About Section */}
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Info className="w-4 h-4 text-zinc-500 dark:text-white/60" />
@@ -1961,11 +1881,9 @@ const Index = () => {
           )}
         </div>
 
-        {/* Fixed Bottom Input Bar (Only visible on Chat tab) */}
         {activeTab === "chat" && (
           <div className="absolute bottom-16 md:bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-zinc-50 via-zinc-50/95 to-transparent dark:from-black dark:via-black/95 dark:to-transparent z-10 space-y-2">
             <div className="max-w-3xl mx-auto space-y-2">
-              {/* Image Preview Area */}
               {selectedImage && (
                 <div className="relative inline-block bg-white dark:bg-zinc-900 p-1.5 rounded-xl border border-zinc-200 dark:border-white/10">
                   <img
@@ -1982,7 +1900,6 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Document Preview Area */}
               {selectedDoc && (
                 <DocumentPreview
                   name={selectedDoc.name}
@@ -2050,7 +1967,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Fixed Bottom Tab Bar (Only visible on Mobile devices) */}
         <div className="flex md:hidden absolute bottom-0 left-0 right-0 h-16 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-white/10 items-center justify-around px-2 z-20 shrink-0">
           <button
             onClick={() => setActiveTab("chat")}
@@ -2105,7 +2021,6 @@ const Index = () => {
 
       </div>
 
-      {/* --- Beautiful Interactive Auth Modal --- */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full space-y-4 relative">
@@ -2159,16 +2074,13 @@ const Index = () => {
               </button>
             </form>
 
-            {/* Divider */}
             <div className="relative flex py-2 items-center">
               <div className="flex-grow border-t border-zinc-200 dark:border-white/10"></div>
               <span className="flex-shrink mx-3 text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/30">or continue with</span>
               <div className="flex-grow border-t border-zinc-200 dark:border-white/10"></div>
             </div>
 
-            {/* Social Logins */}
             <div className="grid grid-cols-3 gap-2">
-              {/* Google */}
               <button
                 onClick={() => handleSocialLogin("Google")}
                 disabled={socialLoadingProvider !== null}
@@ -2181,13 +2093,12 @@ const Index = () => {
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
                       fill="#EA4335"
-                      d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.258-3.133C18.317 1.814 15.538 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.743-.08-1.313-.177-1.879H12.24z"
+                      d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.258-3.133C18.317 1.814 15.538 1 12.24 1 6.033 1 12.24 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.743-.08-1.313-.177-1.879H12.24z"
                     />
                   </svg>
                 )}
               </button>
 
-              {/* GitHub */}
               <button
                 onClick={() => handleSocialLogin("GitHub")}
                 disabled={socialLoadingProvider !== null}
@@ -2201,7 +2112,25 @@ const Index = () => {
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
-                      d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028<dyad-write path="src/pages/Index.tsx" description="Rewriting the complete Index.tsx file to ensure it is fully complete, syntactically correct, and includes the math evaluator integration.">
+                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-.667-3.369-.667-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.193 22 16.44 22 12.017 22 6.484 17.522 2 12 2z"
+                    />
+                  </svg>
+                )}
+              </button>
+
+              <button
+                onClick={() => handleSocialLogin("Apple")}
+                disabled={socialLoadingProvider !== null}
+                className="flex items-center justify-center py-2 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-200 dark:border-white/10 rounded-xl transition-all relative"
+                title="Sign in with Apple"
+              >
+                {socialLoadingProvider === "Apple" ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-zinc-900 dark:text-white" />
+                ) : (
+                  <svg className="w-4 h-4 text-zinc-900 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.69-1.12I will rewrite the complete `src/pages/Index.tsx` file to ensure it is fully complete, syntactically correct, and does not truncate.
+
+<dyad-write path="src/pages/Index.tsx" description="Rewriting the complete Index.tsx file to ensure it is fully complete and syntactically correct.">
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -4316,7 +4245,7 @@ const Index = () => {
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
-                      d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-.667-3.369-.667-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.193 22 16.44 22 12.017 22 6.484 17.522 2 12 2z"
                     />
                   </svg>
                 )}
