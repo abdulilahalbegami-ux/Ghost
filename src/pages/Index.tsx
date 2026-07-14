@@ -417,15 +417,7 @@ const Index = () => {
 
     // Conversational fallback responses based on user input
     const lower = userText.toLowerCase();
-    if (
-      lower.includes("hello") || 
-      lower.includes("hi") || 
-      lower.includes("hey") || 
-      lower.includes("yo") || 
-      lower.includes("sup") || 
-      lower.includes("whats up") || 
-      lower.includes("howdy")
-    ) {
+    if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey")) {
       return applyFlavor("Hello! I am Vertex, your autonomous AI assistant. How can I help you automate your tasks, analyze documents, or generate media today?");
     }
     if (lower.includes("who are you") || lower.includes("what is vertex") || lower.includes("what can you do")) {
@@ -438,8 +430,7 @@ const Index = () => {
       return applyFlavor("I've checked the local meteorological feeds. The current weather is clear with a pleasant breeze, perfect for outdoor activities. Would you like me to monitor this or schedule any outdoor tasks?");
     }
 
-    // Natural, helpful fallback instead of robotic "I have processed your request done"
-    return applyFlavor(`I'm here and ready to help! I've noted your message: "${userText}". What would you like me to do with this? I can help you automate a workflow, search the web, draft a response, or generate creative media based on it. Just let me know!`);
+    return applyFlavor(`I have processed your request: "${userText}". As your autonomous assistant, I can automate this workflow for you. Let me know if you'd like me to set up a custom trigger for this.`);
   };
 
   const simulateStreamingResponse = (
