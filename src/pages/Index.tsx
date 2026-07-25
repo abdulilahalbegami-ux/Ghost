@@ -14,7 +14,6 @@ import {
   LogIn,
   Volume2,
   VolumeX,
-  ArrowRight,
   X,
   Cpu,
   Download,
@@ -69,14 +68,6 @@ interface Chat {
   timestamp: Date;
   messages: Message[];
 }
-
-const DEFAULT_PROMPTS = [
-  { text: "Order me the cheapest pepperoni pizza.", icon: "🍕" },
-  { text: "Generate a video of a futuristic neon highway.", icon: "🎬" },
-  { text: "Summarize my unread messages.", icon: "💬" },
-  { text: "Generate an image of a futuristic cyberpunk city.", icon: "🎨" },
-  { text: "Plan my trip to Dubai for under $500.", icon: "✈️" },
-];
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
@@ -615,7 +606,8 @@ const Index = () => {
       );
     } else if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint")) {
       const randomId = Math.floor(Math.random() * 1000);
-      const generatedImgUrl = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80&sig=${randomId}`;
+      const promptEncoded = encodeURIComponent(text.trim() || "futuristic cyberpunk city");
+      const generatedImgUrl = `https://image.pollinations.ai/prompt/${promptEncoded}?width=1024&height=1024&nologo=true&seed=${randomId}`;
       simulateStreamingResponse(
         text,
         [
@@ -1188,36 +1180,6 @@ const Index = () => {
 
                 <div ref={chatEndRef} />
               </div>
-
-              {activeMessages.length === 1 && !isStreaming && (
-                <div className="space-y-2.5 mt-4">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/40">Suggested Automations</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {DEFAULT_PROMPTS.map((prompt, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSendMessage(prompt.text)}
-                        className="flex items-center justify-between p-3.5 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/30 rounded-xl text-left transition-all group relative"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-base">{prompt.icon}</span>
-                          <span className="text-xs md:text-sm text-zinc-700 dark:text-white/80 group-hover:text-zinc-900 dark:group-hover:text-white font-medium">
-                            {prompt.text}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {prompt.text.includes("video") && !isLoggedIn && (
-                            <span className="flex items-center gap-1 text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                              <Lock className="w-2.5 h-2.5" /> Premium
-                            </span>
-                          )}
-                          <ArrowRight className="w-3.5 h-3.5 text-zinc-400 dark:text-white/40 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
