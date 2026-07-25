@@ -44,7 +44,6 @@ import ChatActions from "@/components/ChatActions";
 import DocumentPreview from "@/components/DocumentPreview";
 import GeneratedImage from "@/components/GeneratedImage";
 import GeneratedVideo from "@/components/GeneratedVideo";
-import SystemMonitor from "@/components/SystemMonitor";
 import { showSuccess, showError } from "@/utils/toast";
 import { evaluateMathExpression } from "@/utils/mathEvaluator";
 import { answerGeneralQuestion } from "@/utils/questionResponder";
@@ -1110,9 +1109,6 @@ const Index = () => {
           {activeTab === "chat" && (
             <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-4">
               <div className="space-y-5">
-                {/* Real-time System Monitor Dashboard */}
-                <SystemMonitor />
-
                 {activeMessages.map((msg) => (
                   <div
                     key={msg.id}
