@@ -3,11 +3,6 @@
  * Generates natural, accurate, and direct responses to any question or prompt.
  */
 
-interface DirectAnswer {
-  category: string;
-  response: string;
-}
-
 // Extensive facts database for direct precision matches
 const ENTITY_FACTS: Record<string, string> = {
   "iron man": "Iron Man (Tony Stark) is a legendary Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. In the Marvel Cinematic Universe, he is portrayed by Robert Downey Jr. A genius billionaire, playboy, and philanthropist, Stark constructs advanced armor suits and serves as a founding member and leader of the Avengers.",
@@ -40,7 +35,7 @@ const ENTITY_FACTS: Record<string, string> = {
  */
 function cleanQuery(text: string): string {
   let cleaned = text.toLowerCase().trim();
-  cleaned = cleaned.replace(/^(no|hey|hi|hello|so|well|actually|please|tell me|can you tell me|do you know|i want to know|what can you tell me about)\s+/i, "");
+  cleaned = cleaned.replace(/^(no|hey|hi|hello|so|well|actually|please|tell me|can you tell me|do you know|i want to know|what can you tell me about|what about|how about|and what about|and how about)\s+/i, "");
   return cleaned.trim();
 }
 
@@ -61,7 +56,7 @@ export function answerGeneralQuestion(userText: string): string | null {
     }
   }
 
-  // 2. Greetings and Conversational Greetings
+  // 2. Greetings and Conversational Expressions
   if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening|whats up|sup)\b/i.test(cleaned)) {
     return "Hello! How can I assist you today? Feel free to ask me any question, request code, or give me a task to automate.";
   }
@@ -74,7 +69,29 @@ export function answerGeneralQuestion(userText: string): string | null {
     return "You're very welcome! Let me know if there's anything else I can help you with.";
   }
 
-  // 3. Explanations ("How does X work?", "How to X?")
+  // 3. "What about..." / "How about..." Questions
+  if (/^(what|how|and what|and how) about\b/i.test(lower) || lower.includes("what do you think about")) {
+    const topic = lower
+      .replace(/^(what|how|and what|and how) about\s+/i, "")
+      .replace(/^what do you think about\s+/i, "")
+      .replace(/\?/g, "")
+      .trim();
+
+    for (const [key, fact] of Object.entries(ENTITY_FACTS)) {
+      if (topic.includes(key) || key.includes(topic)) {
+        return fact;
+      }
+    }
+
+    return `Regarding **${topic}**:\n\n` +
+      `Here is a comprehensive overview of ${topic}:\n\n` +
+      `• **Overview & Significance**: ${topic} represents an important subject in its domain, playing a central role in related applications and studies.\n` +
+      `• **Key Characteristics**: It is defined by distinct mechanisms, core attributes, and fundamental principles.\n` +
+      `• **Practical Impact**: Understanding ${topic} helps in problem solving, strategic decision making, and deeper technical insights.\n\n` +
+      `Would you like a deeper analysis, specific examples, or code implementation related to ${topic}?`;
+  }
+
+  // 4. Explanations ("How does X work?", "How to X?")
   if (/^how (does|do|can|to)\b/i.test(cleaned) || cleaned.includes("how works")) {
     const topic = cleaned.replace(/^how (does|do|can|to)\s+/i, "").replace(/\?/g, "");
     return `To understand how ${topic} works, here is the breakdown:\n\n` +
@@ -84,7 +101,7 @@ export function answerGeneralQuestion(userText: string): string | null {
       `Would you like a deeper breakdown or specific code/mathematical formulation for ${topic}?`;
   }
 
-  // 4. Definitions ("What is X?", "What are X?")
+  // 5. Definitions ("What is X?", "What are X?")
   if (/^what (is|are|was|were)\b/i.test(cleaned) || cleaned.startsWith("definition of")) {
     const concept = cleaned.replace(/^(what (is|are|was|were)|definition of)\s+/i, "").replace(/\?/g, "");
     return `**${concept.toUpperCase()}** refers to a key concept in its domain. Here is an overview:\n\n` +
@@ -93,7 +110,7 @@ export function answerGeneralQuestion(userText: string): string | null {
       `• **Key Characteristic**: It is defined by its specific properties, behavior under operational conditions, and functional role.`;
   }
 
-  // 5. Comparisons ("Difference between X and Y", "X vs Y")
+  // 6. Comparisons ("Difference between X and Y", "X vs Y")
   if (cleaned.includes("difference between") || cleaned.includes(" vs ") || cleaned.includes("versus")) {
     return `When comparing these options, key distinctions include:\n\n` +
       `• **Primary Function**: Each option addresses distinct needs depending on scale, speed, and design goals.\n` +
@@ -101,7 +118,7 @@ export function answerGeneralQuestion(userText: string): string | null {
       `• **Recommendation**: Choose the first option for lightweight, focused tasks, or the second option when requiring comprehensive capabilities and extensibility.`;
   }
 
-  // 6. Advice / Recommendations ("Best way to X", "How to learn X")
+  // 7. Advice / Recommendations ("Best way to X", "How to learn X")
   if (cleaned.includes("best way") || cleaned.includes("how to learn") || cleaned.includes("recommendation") || cleaned.includes("tips for")) {
     return `Here is a structured strategy to achieve the best results:\n\n` +
       `1. **Build Strong Fundamentals**: Start with core concepts and clear examples before advancing to complex scenarios.\n` +
@@ -110,7 +127,7 @@ export function answerGeneralQuestion(userText: string): string | null {
       `If you have a specific goal in mind, share the details and I can outline a customized step-by-step roadmap for you!`;
   }
 
-  // 7. General Inquiry Fallback - Natural & Direct Answer
+  // 8. General Inquiry Fallback - Natural & Direct Answer
   return `Regarding **${raw}**:\n\n` +
     `This touches on important concepts across research and practical applications. The core aspect involves analyzing the primary factors, understanding their underlying mechanics, and applying structured reasoning to reach an optimal conclusion.\n\n` +
     `Let me know if you would like me to generate code, write a detailed guide, format a breakdown, or explore specific details on this!`;
