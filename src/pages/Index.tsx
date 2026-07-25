@@ -762,6 +762,16 @@ const Index = () => {
       window.location.href = "https://accounts.google.com/";
       return;
     }
+    if (provider === "GitHub") {
+      showSuccess("Redirecting to GitHub Sign-In...");
+      window.location.href = "https://github.com/login";
+      return;
+    }
+    if (provider === "Apple") {
+      showSuccess("Redirecting to Apple Sign-In...");
+      window.location.href = "https://appleid.apple.com/";
+      return;
+    }
 
     setSocialLoadingProvider(provider);
     showSuccess(`Connecting to ${provider} secure gateway...`);
