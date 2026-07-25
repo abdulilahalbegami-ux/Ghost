@@ -11,7 +11,7 @@ interface GeneratedVideoProps {
 
 export const GeneratedVideo = ({ prompt, videoUrl }: GeneratedVideoProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlayPause = () => {
@@ -55,12 +55,16 @@ export const GeneratedVideo = ({ prompt, videoUrl }: GeneratedVideoProps) => {
         <video
           ref={videoRef}
           src={videoUrl}
+          autoPlay
           loop
           muted
           playsInline
-          onLoadedData={() => setIsLoaded(true)}
+          onLoadedData={() => {
+            setIsLoaded(true);
+            setIsPlaying(true);
+          }}
           onClick={handlePlayPause}
-          className={`w-full h-full object-cover transition-all duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-200 ${
             isLoaded ? "scale-100 blur-0" : "scale-95 blur-md"
           }`}
         />

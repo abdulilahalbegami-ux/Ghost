@@ -43,7 +43,7 @@ export const GeneratedImage = ({ prompt, imageUrl }: GeneratedImageProps) => {
           src={imageUrl}
           alt={prompt}
           onLoad={() => setIsLoaded(true)}
-          className={`w-full h-full object-cover transition-all duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-200 ${
             isLoaded ? "scale-100 blur-0" : "scale-95 blur-md"
           }`}
         />
