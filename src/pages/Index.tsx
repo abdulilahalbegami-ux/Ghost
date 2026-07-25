@@ -757,6 +757,12 @@ const Index = () => {
   };
 
   const handleSocialLogin = (provider: string) => {
+    if (provider === "Google") {
+      showSuccess("Redirecting to Google Sign-In...");
+      window.location.href = "https://accounts.google.com/";
+      return;
+    }
+
     setSocialLoadingProvider(provider);
     showSuccess(`Connecting to ${provider} secure gateway...`);
     
