@@ -757,39 +757,26 @@ const Index = () => {
   };
 
   const handleSocialLogin = (provider: string) => {
-    if (provider === "Google") {
-      showSuccess("Redirecting to Google Sign-In...");
-      window.location.href = "https://accounts.google.com/";
-      return;
-    }
-    if (provider === "GitHub") {
-      showSuccess("Redirecting to GitHub Sign-In...");
-      window.location.href = "https://github.com/login";
-      return;
-    }
-    if (provider === "Apple") {
-      showSuccess("Redirecting to Apple Sign-In...");
-      window.location.href = "https://appleid.apple.com/";
-      return;
-    }
+    const urls: Record<string, string> = {
+      Google: "https://accounts.google.com/",
+      GitHub: "https://github.com/login",
+      Apple: "https://appleid.apple.com/",
+    };
 
-    setSocialLoadingProvider(provider);
-    showSuccess(`Connecting to ${provider} secure gateway...`);
-    
-    setTimeout(() => {
+    const mockUsernames: Record<string, string> = {
+      Google: "Google Operator",
+      GitHub: "Octocat Dev",
+      Apple: "Apple Operator",
+    };
+
+    const targetUrl = urls[provider];
+    if (targetUrl) {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
       setIsLoggedIn(true);
       setShowAuthModal(false);
-      setSocialLoadingProvider(null);
-      
-      const mockUsernames: Record<string, string> = {
-        Google: "Google Operator",
-        GitHub: "Octocat Dev",
-        Apple: "Apple Operator",
-      };
-      
       setUsername(mockUsernames[provider] || "Social Operator");
-      showSuccess(`Successfully authenticated via ${provider}!`);
-    }, 1500);
+      showSuccess(`Opened ${provider} sign-in in a new tab and authenticated session.`);
+    }
   };
 
   const SidebarContent = () => {
