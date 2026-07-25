@@ -124,14 +124,14 @@ const Index = () => {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: "default-chat",
-      title: "Welcome to Nuvio",
+      title: "Welcome to Nuvio Test",
       isPinned: false,
       timestamp: new Date(),
       messages: [
         {
           id: "welcome",
           sender: "vertex",
-          text: "Nuvio OS online. Active Model: Nuvio GPT-4o Core. Ready for complex reasoning, programming, media generation, market price comparison, and background task automation.",
+          text: "Nuvio Test OS online. Active Model: Nuvio GPT-4o Core. Ready for complex reasoning, programming, media generation, market price comparison, and background task automation.",
           timestamp: new Date(),
         },
       ],
@@ -228,7 +228,7 @@ const Index = () => {
         {
           id: "welcome",
           sender: "vertex",
-          text: "Nuvio OS online. Ready for your query.",
+          text: "Nuvio Test OS online. Ready for your query.",
           timestamp: new Date(),
         },
       ],
@@ -327,7 +327,7 @@ const Index = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `nuvio-chat-export-${Date.now()}.json`;
+      link.download = `nuvio-test-chat-export-${Date.now()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -759,7 +759,7 @@ const Index = () => {
     setIsLoggedIn(true);
     setShowAuthModal(false);
     setUsername(authEmail.split("@")[0] || "Agent Alpha");
-    showSuccess(authMode === "signin" ? "Welcome back to Nuvio OS!" : "Account created successfully!");
+    showSuccess(authMode === "signin" ? "Welcome back to Nuvio Test OS!" : "Account created successfully!");
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -795,7 +795,7 @@ const Index = () => {
           <div className="flex items-center gap-3 shrink-0">
             <NuvioLogo size="sm" />
             <div>
-              <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Nuvio</h1>
+              <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Nuvio Test</h1>
               <p className="text-[10px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
             </div>
           </div>
@@ -994,7 +994,7 @@ const Index = () => {
             <button
               onClick={() => {
                 setIsLoggedIn(false);
-                showSuccess("Logged out of Nuvio OS.");
+                showSuccess("Logged out of Nuvio Test OS.");
               }}
               title="Sign Out"
               className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
@@ -1059,13 +1059,13 @@ const Index = () => {
             <div className="md:hidden flex items-center gap-2">
               <NuvioLogo size="sm" />
               <div>
-                <h1 className="text-sm font-bold tracking-wider uppercase text-zinc-900 dark:text-white">Nuvio</h1>
+                <h1 className="text-sm font-bold tracking-wider uppercase text-zinc-900 dark:text-white">Nuvio Test</h1>
                 <p className="text-[8px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">v1.0</p>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Nuvio Core: Online</span>
+              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Nuvio Test Core: Online</span>
               <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80 font-mono ml-2">
                 {aiModel}
               </span>
@@ -1219,7 +1219,7 @@ const Index = () => {
               <div className="text-center space-y-2">
                 <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Voice Interface</h2>
                 <p className="text-xs text-zinc-500 dark:text-white/60">
-                  {isListening ? "Nuvio is listening..." : "Tap the core to speak"}
+                  {isListening ? "Nuvio Test is listening..." : "Tap the core to speak"}
                 </p>
               </div>
 
@@ -1250,7 +1250,7 @@ const Index = () => {
                   <Lock className="w-8 h-8 text-amber-500 dark:text-amber-400 mb-3 animate-bounce" />
                   <h3 className="text-lg font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Autonomous Memory Core</h3>
                   <p className="text-xs text-zinc-500 dark:text-white/60 max-w-sm mt-1.5 mb-4">
-                    Nuvio's persistent memory core is exclusive to registered operators. Sign in to let Nuvio remember your preferences across sessions.
+                    Nuvio Test's persistent memory core is exclusive to registered operators. Sign in to let Nuvio Test remember your preferences across sessions.
                   </p>
                   <button
                     onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
@@ -1274,7 +1274,7 @@ const Index = () => {
             <div className="max-w-2xl mx-auto space-y-8 text-zinc-900 dark:text-white pb-12">
               <div className="border-b border-zinc-200 dark:border-white/10 pb-3">
                 <h2 className="text-xl font-bold tracking-wider uppercase">System Settings</h2>
-                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Nuvio OS environment</p>
+                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Nuvio Test OS environment</p>
               </div>
 
               {!isLoggedIn && (
@@ -1308,7 +1308,7 @@ const Index = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <p className="text-xs font-semibold">Profile Username</p>
-                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your operator identity across Nuvio OS</p>
+                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your operator identity across Nuvio Test OS</p>
                         </div>
                         {isEditingProfile ? (
                           <div className="flex items-center gap-2">
@@ -1367,7 +1367,7 @@ const Index = () => {
                       <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                         <button
                           onClick={() => {
-                            if (confirm("Are you absolutely sure you want to delete your Nuvio account? This action is irreversible.")) {
+                            if (confirm("Are you absolutely sure you want to delete your Nuvio Test account? This action is irreversible.")) {
                               setIsLoggedIn(false);
                               showSuccess("Account deleted successfully.");
                             }
@@ -1377,7 +1377,7 @@ const Index = () => {
                           <Trash2 className="w-3.5 h-3.5" /> Delete Account
                         </button>
                         <button
-                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Nuvio OS."); }}
+                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Nuvio Test OS."); }}
                           className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
                         >
                           <LogOut className="w-3.5 h-3.5" /> Sign Out
@@ -1419,12 +1419,12 @@ const Index = () => {
                         <Lock className="w-5 h-5 text-amber-500 dark:text-amber-400 mb-1.5" />
                         <p className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Custom Personality Core</p>
                         <p className="text-[10px] text-zinc-500 dark:text-white/60 max-w-xs mt-0.5">
-                          Sign in to customize Nuvio's behavior, tone, and response style.
+                          Sign in to customize Nuvio Test's behavior, tone, and response style.
                         </p>
                       </div>
                     )}
                     <p className="text-xs font-semibold">Custom Personality Core</p>
-                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Explain exactly how you want Nuvio to behave, speak, and respond.</p>
+                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Explain exactly how you want Nuvio Test to behave, speak, and respond.</p>
                     <form onSubmit={handleSavePersonality} className="space-y-2">
                       <textarea
                         value={personalityInput}
@@ -1506,7 +1506,7 @@ const Index = () => {
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Web Search Agent</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio to browse the live web for real-time data</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio Test to browse the live web for real-time data</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1556,7 +1556,7 @@ const Index = () => {
                     )}
                     <div>
                       <p className="text-xs font-semibold">Autonomous Memory Core</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio to remember facts across sessions</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio Test to remember facts across sessions</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1751,7 +1751,7 @@ const Index = () => {
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Anonymous Data Collection</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Share telemetry to help improve Nuvio OS</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Share telemetry to help improve Nuvio Test OS</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1938,7 +1938,7 @@ const Index = () => {
                   </div>
                   <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
                     <span className="text-zinc-500 dark:text-white/60">Rate the App</span>
-                    <button onClick={() => showSuccess("Thank you for rating Nuvio OS 5 stars!")} className="text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 flex items-center gap-1">
+                    <button onClick={() => showSuccess("Thank you for rating Nuvio Test OS 5 stars!")} className="text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 flex items-center gap-1">
                       ★★★★★
                     </button>
                   </div>
@@ -2006,7 +2006,7 @@ const Index = () => {
                 </button>
                 <input
                   type="text"
-                  placeholder="Ask Nuvio to reason, write code, generate media..."
+                  placeholder="Ask Nuvio Test to reason, write code, generate media..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
@@ -2101,7 +2101,7 @@ const Index = () => {
             <div className="text-center space-y-1">
               <NuvioLogo size="sm" />
               <h3 className="text-base font-bold uppercase tracking-wider mt-2 text-zinc-900 dark:text-white">
-                {authMode === "signin" ? "Sign In to Nuvio OS" : "Create Free Account"}
+                {authMode === "signin" ? "Sign In to Nuvio Test OS" : "Create Free Account"}
               </h3>
               <p className="text-[10px] text-zinc-500 dark:text-white/40">
                 Unlock persistent memory, custom personalities, and video generation.
