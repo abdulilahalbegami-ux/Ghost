@@ -1,140 +1,230 @@
 /**
- * Universal Knowledge & Conversational Engine for Nuvio AI
- * Generates natural, accurate, and direct responses to any question or prompt.
+ * Universal Knowledge & Conversational Engine for Nuvio AI with Typo Tolerance
+ * Generates natural, accurate, and direct responses to questions even with spelling errors.
  */
 
-// Helper to sanitize and normalize text for fuzzy key lookup
+// Levenshtein distance algorithm for calculating string similarity
+function levenshteinDistance(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix: number[][] = [];
+
+  for (let i = 0; i <= a.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= b.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1, // deletion
+        matrix[i][j - 1] + 1, // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+// Calculate similarity score between 0.0 and 1.0
+function stringSimilarity(str1: string, str2: string): number {
+  if (str1 === str2) return 1.0;
+  const distance = levenshteinDistance(str1, str2);
+  const maxLength = Math.max(str1.length, str2.length);
+  if (maxLength === 0) return 1.0;
+  return (maxLength - distance) / maxLength;
+}
+
+// Helper to sanitize and normalize text
 function normalizeKey(str: string): string {
   return str.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 // Rich Knowledge Base
-const KNOWLEDGE_BASE: Array<{ keys: string[]; answer: string }> = [
+const KNOWLEDGE_BASE: Array<{ keys: string[]; synonyms: string[]; answer: string }> = [
   {
-    keys: ["spiderman", "spiderman", "peterparker"],
-    answer: "Spider-Man (Peter Parker) is a iconic Marvel Comics superhero created by Stan Lee and Steve Ditko. After being bitten by a radioactive spider, high school student Peter Parker gained extraordinary arachnid-like abilities—including superhuman strength, agility, wall-crawling, and a 'spider-sense' that warns him of danger. Following the tragic death of his Uncle Ben, Peter learned the core motto that defines his life: 'With great power comes great responsibility.' He protects New York City using custom web-shooters while balancing his everyday struggles as a photographer and student.",
+    keys: ["spiderman", "peterparker"],
+    synonyms: ["spider man", "spider-man", "spidrman", "spidrmn", "peter parker", "spidey"],
+    answer: "Spider-Man (Peter Parker) is an iconic Marvel superhero created by Stan Lee and Steve Ditko. Bitten by a radioactive spider, high school student Peter Parker gained extraordinary powers—including wall-crawling, superhuman agility, and a 'spider-sense'. Guided by the ethos 'With great power comes great responsibility,' he protects New York City while managing the challenges of everyday life.",
   },
   {
     keys: ["ironman", "tonystark"],
-    answer: "Iron Man (Tony Stark) is a flagship Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. In the Marvel Cinematic Universe, he is portrayed by Robert Downey Jr. A genius billionaire inventor and head of Stark Industries, Tony builds a high-tech suit of powered armor equipped with repulsor rays, flight capabilities, and advanced AI systems (like J.A.R.V.I.S. and F.R.I.D.A.Y.). He is a founding member and key leader of the Avengers.",
+    synonyms: ["iron man", "iron-man", "irn man", "tony stark", "tony strak"],
+    answer: "Iron Man (Tony Stark) is a legendary Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. A genius billionaire inventor, Tony builds an advanced suit of powered armor equipped with repulsor beams, flight tech, and AI systems (J.A.R.V.I.S. and F.R.I.D.A.Y.). He serves as a central leader of the Avengers.",
   },
   {
     keys: ["batman", "brucewayne"],
-    answer: "Batman (Bruce Wayne) is a legendary DC Comics superhero created by Bob Kane and Bill Finger. After witnessing the tragic murder of his parents as a child in Gotham City, Bruce swore to eliminate crime. Armed with his vast wealth, peak physical conditioning, expert martial arts mastery, detective skills, and advanced technology from Wayne Enterprises, he protects Gotham as the Dark Knight.",
+    synonyms: ["dark knight", "darknight", "bat man", "batmn", "bruce wayne", "bruce wain"],
+    answer: "Batman (Bruce Wayne) is a DC Comics superhero created by Bob Kane and Bill Finger. Driven by the tragedy of his parents' murder, Bruce mastered combat, detective skills, and high-tech weaponry to defend Gotham City as the Dark Knight.",
   },
   {
     keys: ["superman", "clarkkent", "kalel"],
-    answer: "Superman (Clark Kent / Kal-El) is a DC Comics superhero created by Jerry Siegel and Joe Shuster. Sent to Earth from the dying planet Krypton as an infant, he was raised in Smallville, Kansas by Jonathan and Martha Kent. Earth's yellow sun grants him immense powers including flight, super strength, invulnerability, heat vision, x-ray vision, and super speed. He fights for truth, justice, and hope.",
+    synonyms: ["super man", "supr man", "supr-man", "clark kent", "kal el"],
+    answer: "Superman (Clark Kent / Kal-El) is a DC Comics superhero created by Jerry Siegel and Joe Shuster. Born on Krypton and raised in Smallville, Kansas, Earth's yellow sun gives him flight, invulnerability, super strength, and heat vision.",
   },
   {
     keys: ["captainamerica", "steverogers"],
-    answer: "Captain America (Steve Rogers) is a Marvel superhero enhanced to the peak of human capability by an experimental Super-Soldier Serum during World War II. Frozen in ice for decades, he awakened in the modern era to lead the Avengers with his indestructible vibranium shield and unyielding moral compass.",
+    synonyms: ["captain america", "captin america", "cap America", "steve rogers", "cap america"],
+    answer: "Captain America (Steve Rogers) is a Marvel superhero enhanced to peak human condition by the Super-Soldier Serum during WWII. Wielding an indestructible Vibranium shield, he leads the Avengers with unwavering bravery.",
   },
   {
     keys: ["thor", "thorodinson"],
-    answer: "Thor Odinson is the Marvel superhero based on the Norse god of thunder. Wielding the enchanted hammer Mjolnir and later the battle-axe Stormbreaker, Thor defends Asgard and Earth (Midgard) as one of the strongest members of the Avengers.",
+    synonyms: ["god of thunder", "thor odinson", "thorr", "mjolnir"],
+    answer: "Thor Odinson is Marvel's god of thunder. Wielding Mjolnir and Stormbreaker, Thor protects Asgard and Earth as one of the most powerful members of the Avengers.",
   },
   {
     keys: ["wonderwoman", "dianaprince"],
-    answer: "Wonder Woman (Diana Prince) is a DC Comics superhero and Amazonian warrior princess from the hidden island of Themyscira. Armed with her Lasso of Truth, indestructible bracelets, and superhuman strength, she fights as an ambassador for peace and justice alongside the Justice League.",
+    synonyms: ["wonder woman", "wondr woman", "wondrwman", "diana prince"],
+    answer: "Wonder Woman (Diana Prince) is an Amazonian warrior princess from Themyscira created by William Moulton Marston. Armed with the Lasso of Truth and bulletproof bracelets, she advocates for peace and justice.",
   },
   {
     keys: ["wolverine", "logan", "jameshowlett"],
-    answer: "Wolverine (Logan / James Howlett) is a Marvel mutant superhero and prominent member of the X-Men. He possesses a powerful healing factor, heightened animalistic senses, and a skeleton reinforced with indestructible Adamantium along with retractable claws.",
+    synonyms: ["wolvrine", "wolverin", "logan", "xmen wolverine"],
+    answer: "Wolverine (Logan / James Howlett) is a Marvel mutant superhero equipped with an adamantium-reinforced skeleton, retractable claws, and an extraordinary healing factor.",
   },
   {
     keys: ["deadpool", "wadewilson"],
-    answer: "Deadpool (Wade Wilson) is Marvel's 'Merc with a Mouth', created by Fabian Nicieza and Rob Liefeld. Known for his accelerated healing factor, expert combat skills, irreverent humor, and frequent breaking of the fourth wall.",
+    synonyms: ["dead pool", "dedpool", "wade wilson"],
+    answer: "Deadpool (Wade Wilson) is Marvel's irreverent 'Merc with a Mouth', famous for his rapid healing factor, martial prowess, and fourth-wall-breaking humor.",
   },
   {
     keys: ["blackpanther", "tchalla"],
-    answer: "Black Panther (King T'Challa) is the superhero king and protector of the technologically advanced African nation of Wakanda. Consuming the Heart-Shaped Herb grants him superhuman speed, agility, and strength, complemented by a suit woven from Vibranium.",
-  },
-  {
-    keys: ["marvel"],
-    answer: "Marvel Entertainment is a world-leading entertainment company best known for its vast universe of comic books, films, and characters—including Spider-Man, Iron Man, Captain America, Thor, Black Panther, the X-Men, and the Fantastic Four.",
-  },
-  {
-    keys: ["dc", "dccomics"],
-    answer: "DC Comics is one of the largest and oldest American comic book publishers, famous for iconic superheroes like Superman, Batman, Wonder Woman, The Flash, Aquaman, and Green Lantern, as well as the Justice League.",
+    synonyms: ["black panther", "blackpanthr", "tchalla", "wakanda"],
+    answer: "Black Panther (King T'Challa) is the superhero monarch of Wakanda. Consuming the Heart-Shaped Herb bestows him with superhuman physical abilities and a Vibranium suit.",
   },
   {
     keys: ["alberteinstein", "einstein"],
-    answer: "Albert Einstein (1879–1955) was a German-born theoretical physicist widely acknowledged as one of the greatest physicists of all time. He is best known for developing the theory of relativity (including the famous mass-energy equivalence formula E = mc²) and won the 1921 Nobel Prize in Physics for his explanation of the photoelectric effect.",
+    synonyms: ["albert einstein", "albrt einstein", "einstien", "einstin"],
+    answer: "Albert Einstein (1879–1955) was a world-renowned theoretical physicist who developed the theory of relativity (including E = mc²). He received the 1921 Nobel Prize in Physics for explaining the photoelectric effect.",
   },
   {
     keys: ["isaacnewton", "sirisaacnewton"],
-    answer: "Sir Isaac Newton (1643–1727) was an English mathematician, physicist, and astronomer who laid the foundations for classical mechanics through his laws of motion and universal gravitation. He also co-invented calculus.",
+    synonyms: ["isaac newton", "isac newton", "sir isaac newton", "newton gravity"],
+    answer: "Sir Isaac Newton (1643–1727) was an English mathematician and physicist who formulated the laws of motion, universal gravitation, and co-developed calculus.",
   },
   {
     keys: ["nikolatesla", "tesla"],
-    answer: "Nikola Tesla (1856–1943) was a Serbian-American inventor, electrical engineer, and futurist best known for his contributions to the design of the modern alternating current (AC) electricity supply system.",
+    synonyms: ["nikola tesla", "nicola tesla", "tesla ac"],
+    answer: "Nikola Tesla (1856–1943) was an inventor and electrical engineer whose pioneering work on Alternating Current (AC) power systems revolutionized global electrical technology.",
   },
   {
     keys: ["elonmusk"],
-    answer: "Elon Musk is a South African-born entrepreneur, engineer, and business magnate. He is the CEO of SpaceX, CEO and product architect of Tesla, owner and CTO of X (formerly Twitter), and founder of Neuralink and The Boring Company.",
+    synonyms: ["elon musk", "elon", "musk tesla", "elon musque"],
+    answer: "Elon Musk is an entrepreneur and CEO of SpaceX, Tesla, Neuralink, and xAI, as well as the owner of X (formerly Twitter).",
   },
   {
     keys: ["stevejobs"],
-    answer: "Steve Jobs (1955–2011) was an American entrepreneur and co-founder of Apple Inc. He revolutionized multiple industries through iconic consumer electronics like the Macintosh, iPod, iPhone, and iPad, as well as leading Pixar Animation Studios.",
-  },
-  {
-    keys: ["billgates"],
-    answer: "Bill Gates is an American business magnate, software developer, and philanthropist who co-founded Microsoft in 1975 with Paul Allen. He later launched the Bill & Melinda Gates Foundation to address global health and poverty.",
+    synonyms: ["steve jobs", "stve jobs", "jobs apple"],
+    answer: "Steve Jobs (1955–2011) was the visionary co-founder of Apple Inc., transforming personal computing, digital music, and mobile phones with the Mac, iPod, and iPhone.",
   },
   {
     keys: ["capitaloffrance", "paris"],
-    answer: "The capital of France is Paris, a major European city and global center for art, fashion, gastronomy, and culture. It is famous for landmarks like the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral.",
+    synonyms: ["paris france", "captial of france", "capital france", "pariss"],
+    answer: "The capital of France is Paris, famous for its rich history, fashion, art, and iconic monuments like the Eiffel Tower and the Louvre Museum.",
   },
   {
     keys: ["capitalofjapan", "tokyo"],
-    answer: "The capital of Japan is Tokyo, the world's most populous metropolitan area, famous for its blend of futuristic skyscrapers, historic shrines, bustling pop culture districts like Shibuya and Akihabara, and world-class culinary scene.",
+    synonyms: ["tokyo japan", "capital japan", "captial of japan", "tokiyo"],
+    answer: "The capital of Japan is Tokyo, a vibrant global metropolis blending futuristic technology, traditional shrines, and world-class gastronomy.",
   },
   {
-    keys: ["capitalofusa", "capitalofunitedstates", "washingtondc"],
-    answer: "The capital of the United States is Washington, D.C. (District of Columbia), home to the federal government's three branches: the White House, the Capitol Building, and the Supreme Court, alongside famous national monuments.",
+    keys: ["capitalofusa", "washingtondc"],
+    synonyms: ["capital of united states", "capital of us", "washington d c", "washington dc"],
+    answer: "The capital of the United States is Washington, D.C., housing the White House, Capitol, Supreme Court, and national monuments.",
   },
   {
-    keys: ["capitalofuk", "capitalofunitedkingdom", "london"],
-    answer: "The capital of the United Kingdom is London, an ancient and influential global metropolis situated on the River Thames, known for Big Ben, the Tower of London, Buckingham Palace, and the British Museum.",
+    keys: ["capitalofuk", "london"],
+    synonyms: ["capital of united kingdom", "capital of britain", "london uk", "londn"],
+    answer: "The capital of the United Kingdom is London, an influential global metropolis situated on the River Thames.",
   },
   {
     keys: ["speedoflight"],
-    answer: "The speed of light in a vacuum is exactly 299,792,458 meters per second (approx. 186,282 miles per second or 300,000 km/s), represented by the symbol 'c'. It is a fundamental physical constant in physics.",
+    answer: "The speed of light in a vacuum is approximately 299,792,458 meters per second (~186,282 miles per second or 300,000 km/s).",
   },
   {
     keys: ["quantumphysics", "quantummechanics"],
-    answer: "Quantum physics is the branch of physics that studies matter and light on atomic and subatomic scales. It explores remarkable phenomena like wave-particle duality, quantum superposition, and quantum entanglement.",
+    synonyms: ["quantum physics", "quantum mechanics", "quantom physics"],
+    answer: "Quantum physics is the branch of physics studying matter and light at subatomic scales, exploring phenomena like superposition and quantum entanglement.",
   },
   {
     keys: ["photosynthesis"],
-    answer: "Photosynthesis is the process used by green plants, algae, and cyanobacteria to convert light energy into chemical energy. Using sunlight, carbon dioxide, and water, plants synthesize glucose and release oxygen into the atmosphere.",
+    synonyms: ["photo synthesis", "photosinthesis", "fotosynthesis"],
+    answer: "Photosynthesis is the biological process where plants convert sunlight, water, and carbon dioxide into glucose energy and oxygen.",
   },
   {
     keys: ["artificialintelligence", "ai"],
-    answer: "Artificial Intelligence (AI) refers to computer systems designed to perform tasks that typically require human intelligence—such as visual perception, natural language understanding, logical reasoning, learning, decision-making, and autonomous problem solving.",
-  },
-  {
-    keys: ["blackhole"],
-    answer: "A black hole is a region of spacetime where gravity is so strong that nothing, not even light, can escape from it. They typically form when massive stars collapse under their own gravity at the end of their life cycle.",
+    synonyms: ["artificial intelligence", "artifical intelligence", "artifical intelgence"],
+    answer: "Artificial Intelligence (AI) refers to software systems capable of performing cognitive tasks like reasoning, learning, language understanding, and problem solving.",
   },
   {
     keys: ["whoareyou", "whatisnuvio", "nuvio"],
-    answer: "I am Nuvio, an autonomous AI operating system designed for multi-step reasoning, voice interaction, programming, research, background task automation, document analysis, and visual generation.",
+    synonyms: ["nuvio test", "nuviotest", "who created you", "what is nuvio test"],
+    answer: "I am Nuvio Test, an autonomous AI operating system designed for multi-step reasoning, voice interaction, coding, research, media synthesis, and background tasks.",
   }
 ];
 
 /**
- * Normalizes conversational lead-ins.
+ * Pre-cleans common typo lead-ins in question phrasing.
  */
 function cleanQuery(text: string): string {
   let cleaned = text.toLowerCase().trim();
+  // Autocorrect common conversational typos
+  cleaned = cleaned
+    .replace(/\b(wht|wat|whas|whats|what's|whos|who's|whois)\b/g, (m) => {
+      if (m.includes("who")) return "who is";
+      return "what is";
+    })
+    .replace(/\b(tel me|telme|tellme)\b/g, "tell me")
+    .replace(/\b(plz|pls|plse)\b/g, "please")
+    .replace(/\b(abou|abt)\b/g, "about");
+
   cleaned = cleaned.replace(/^(no|hey|hi|hello|so|well|actually|please|tell me|can you tell me|do you know|i want to know|what can you tell me about|what about|how about|and what about|and how about)\s+/i, "");
   return cleaned.trim();
 }
 
 /**
- * Evaluates any user input and generates a natural, accurate AI answer.
+ * Checks if a token matches any key or synonym with typo tolerance.
+ */
+function fuzzyMatch(userInput: string, target: string): boolean {
+  const normUser = normalizeKey(userInput);
+  const normTarget = normalizeKey(target);
+
+  if (!normUser || !normTarget) return false;
+
+  // Exact substring
+  if (normUser.includes(normTarget) || normTarget.includes(normUser)) {
+    return true;
+  }
+
+  // Word-by-word fuzzy Levenshtein check
+  const userWords = userInput.toLowerCase().split(/\s+/);
+  const targetWords = target.toLowerCase().split(/\s+/);
+
+  for (const uWord of userWords) {
+    if (uWord.length < 3) continue;
+    for (const tWord of targetWords) {
+      if (tWord.length < 3) continue;
+
+      const sim = stringSimilarity(uWord, tWord);
+      // High similarity threshold for words
+      if (sim >= 0.75) {
+        return true;
+      }
+    }
+  }
+
+  // Full string similarity check
+  const overallSim = stringSimilarity(normUser, normTarget);
+  return overallSim >= 0.70;
+}
+
+/**
+ * Evaluates user input and generates a natural, typo-tolerant AI answer.
  */
 export function answerGeneralQuestion(userText: string): string | null {
   if (!userText || !userText.trim()) return null;
@@ -142,44 +232,50 @@ export function answerGeneralQuestion(userText: string): string | null {
   const raw = userText.trim();
   const lower = raw.toLowerCase();
   const cleaned = cleanQuery(raw);
-  const normalizedRaw = normalizeKey(raw);
 
-  // 1. Exact & Fuzzy Knowledge Base Search
+  // 1. Check Knowledge Base with Fuzzy Match & Typo Tolerance
   for (const item of KNOWLEDGE_BASE) {
+    // Check main keys
     for (const key of item.keys) {
-      if (
-        normalizedRaw.includes(key) ||
-        normalizeKey(cleaned).includes(key) ||
-        lower.includes(key)
-      ) {
+      if (fuzzyMatch(lower, key) || fuzzyMatch(cleaned, key)) {
         return item.answer;
+      }
+    }
+    // Check synonyms if present
+    if (item.synonyms) {
+      for (const syn of item.synonyms) {
+        if (fuzzyMatch(lower, syn) || fuzzyMatch(cleaned, syn)) {
+          return item.answer;
+        }
       }
     }
   }
 
-  // 2. Greetings and Conversational Expressions
-  if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening|whats up|sup)\b/i.test(cleaned)) {
+  // 2. Typo-Tolerant Greetings
+  if (/^(hi|hello|hey|heyy|greetings|good morning|good afternoon|good evening|whats up|sup|helloo)\b/i.test(cleaned)) {
     return "Hello! I am ready to assist you. Ask me anything or let me know what you'd like to work on.";
   }
 
-  if (cleaned.includes("how are you") || cleaned.includes("how do you do")) {
+  if (cleaned.includes("how are you") || cleaned.includes("how do you do") || cleaned.includes("how r u")) {
     return "I'm operating smoothly and ready to answer any questions or help with your tasks.";
   }
 
-  if (cleaned.includes("thank you") || cleaned.includes("thanks")) {
+  if (cleaned.includes("thank you") || cleaned.includes("thanks") || cleaned.includes("thx") || cleaned.includes("thnk u")) {
     return "You're very welcome!";
   }
 
-  // 3. Dynamic "Who is / Who was" Handler
-  if (/^who (is|was|are|were)\b/i.test(cleaned)) {
-    const subject = cleaned.replace(/^who (is|was|are|were)\s+/i, "").replace(/\?/g, "").trim();
+  // 3. Dynamic "Who is" Handler with typo correction
+  if (/^(who|whos|whois)\s+(is|was|are|were)?\b/i.test(cleaned) || cleaned.startsWith("who ")) {
+    const subject = cleaned.replace(/^(who|whos|whois)\s+(is|was|are|were)?\s+/i, "").replace(/\?/g, "").trim();
     if (subject) {
-      // Check KB again with subject
-      const normSubject = normalizeKey(subject);
+      // Re-run fuzzy check against subject
       for (const item of KNOWLEDGE_BASE) {
         for (const key of item.keys) {
-          if (normSubject.includes(key) || key.includes(normSubject)) {
-            return item.answer;
+          if (fuzzyMatch(subject, key)) return item.answer;
+        }
+        if (item.synonyms) {
+          for (const syn of item.synonyms) {
+            if (fuzzyMatch(subject, syn)) return item.answer;
           }
         }
       }
@@ -187,15 +283,17 @@ export function answerGeneralQuestion(userText: string): string | null {
     }
   }
 
-  // 4. Dynamic "What is / What are" Handler
-  if (/^what (is|are|was|were)\b/i.test(cleaned) || cleaned.startsWith("definition of")) {
-    const concept = cleaned.replace(/^(what (is|are|was|were)|definition of)\s+/i, "").replace(/\?/g, "").trim();
+  // 4. Dynamic "What is" Handler with typo correction
+  if (/^(what|whats|whatis|wht|wat)\s+(is|are|was|were)?\b/i.test(cleaned) || cleaned.startsWith("definition of")) {
+    const concept = cleaned.replace(/^(what|whats|whatis|wht|wat)\s+(is|are|was|were)?\s+/i, "").replace(/definition of\s+/i, "").replace(/\?/g, "").trim();
     if (concept) {
-      const normConcept = normalizeKey(concept);
       for (const item of KNOWLEDGE_BASE) {
         for (const key of item.keys) {
-          if (normConcept.includes(key) || key.includes(normConcept)) {
-            return item.answer;
+          if (fuzzyMatch(concept, key)) return item.answer;
+        }
+        if (item.synonyms) {
+          for (const syn of item.synonyms) {
+            if (fuzzyMatch(concept, syn)) return item.answer;
           }
         }
       }
@@ -203,19 +301,21 @@ export function answerGeneralQuestion(userText: string): string | null {
     }
   }
 
-  // 5. "What about..." / "How about..." Questions
-  if (/^(what|how|and what|and how) about\b/i.test(lower) || lower.includes("what do you think about")) {
+  // 5. "What about..." Questions with typo tolerance
+  if (/^(what|how|and what|and how)\s+about\b/i.test(lower) || lower.includes("think about")) {
     const topic = lower
-      .replace(/^(what|how|and what|and how) about\s+/i, "")
+      .replace(/^(what|how|and what|and how)\s+about\s+/i, "")
       .replace(/^what do you think about\s+/i, "")
       .replace(/\?/g, "")
       .trim();
 
-    const normTopic = normalizeKey(topic);
     for (const item of KNOWLEDGE_BASE) {
       for (const key of item.keys) {
-        if (normTopic.includes(key) || key.includes(normTopic)) {
-          return item.answer;
+        if (fuzzyMatch(topic, key)) return item.answer;
+      }
+      if (item.synonyms) {
+        for (const syn of item.synonyms) {
+          if (fuzzyMatch(topic, syn)) return item.answer;
         }
       }
     }
@@ -223,15 +323,6 @@ export function answerGeneralQuestion(userText: string): string | null {
     return `${topic.charAt(0).toUpperCase() + topic.slice(1)} is an important topic involving key foundational concepts, structured processes, and practical applications within its field.`;
   }
 
-  // 6. Explanations ("How does X work?", "How to X?")
-  if (/^how (does|do|can|to)\b/i.test(cleaned) || cleaned.includes("how works")) {
-    const topic = cleaned.replace(/^how (does|do|can|to)\s+/i, "").replace(/\?/g, "").trim();
-    return `Here is how ${topic} works:\n\n` +
-      `1. **Core Mechanism**: It operates through a structured sequence that transforms inputs into reliable results.\n` +
-      `2. **Key Components**: The system relies on essential underlying components working together seamlessly.\n` +
-      `3. **Practical Execution**: In real-world applications, this provides consistent stability and efficiency.`;
-  }
-
-  // 7. General Inquiry Fallback
+  // 6. General Inquiry Fallback
   return `${raw.charAt(0).toUpperCase() + raw.slice(1)} is a notable topic involving key principles, structured systems, and practical applications.`;
 }

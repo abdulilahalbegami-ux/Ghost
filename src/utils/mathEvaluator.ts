@@ -1,5 +1,16 @@
 export function evaluateMathExpression(text: string): string | null {
-  const cleanText = text.toLowerCase().trim();
+  let cleanText = text.toLowerCase().trim();
+
+  // Common typo corrections for math phrases
+  cleanText = cleanText
+    .replace(/\b(wats|whas|wht is|wat is|whats|what's)\b/g, "what is")
+    .replace(/\b(calc|calculat|calclate)\b/g, "calculate")
+    .replace(/\b(pluss|plse|pluse)\b/g, "+")
+    .replace(/\b(minse|minuse|minos)\b/g, "-")
+    .replace(/\b(tyms|tymes|multipliedd|multipled)\b/g, "*")
+    .replace(/\b(divded|dived|dividedd)\b/g, "/")
+    .replace(/\b(sqar|squar|skware)\b/g, "square")
+    .replace(/\b(root of|root)\b/g, "root");
 
   let expression = cleanText
     .replace(/what's/g, "")
@@ -20,7 +31,7 @@ export function evaluateMathExpression(text: string): string | null {
     .trim();
 
   // Check percentage expressions e.g., "15% of 200" or "20 percent of 150"
-  const percentMatch = expression.match(/^(\d+(?:\.\d+)?)\s*(?:%|percent)\s*of\s*(\d+(?:\.\d+)?)$/);
+  const percentMatch = expression.match(/^(\d+(?:\.\d+)?)\s*(?:%|percent|percnt)\s*of\s*(\d+(?:\.\d+)?)$/);
   if (percentMatch) {
     const rate = parseFloat(percentMatch[1]);
     const total = parseFloat(percentMatch[2]);
@@ -29,7 +40,7 @@ export function evaluateMathExpression(text: string): string | null {
   }
 
   // Square root matching e.g., "sqrt(16)" or "square root of 144"
-  const sqrtMatch = expression.match(/^(?:sqrt|square root of)\s*(\d+(?:\.\d+)?)$/);
+  const sqrtMatch = expression.match(/^(?:sqrt|square root of|square root|sqr root of|root of)\s*(\d+(?:\.\d+)?)$/);
   if (sqrtMatch) {
     const val = parseFloat(sqrtMatch[1]);
     return `√${val} = ${Math.sqrt(val)}`;
