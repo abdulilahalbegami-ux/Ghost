@@ -5,7 +5,7 @@
 
 // Extensive facts database for direct precision matches
 const ENTITY_FACTS: Record<string, string> = {
-  "iron man": "Iron Man (Tony Stark) is a legendary Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. In the Marvel Cinematic Universe, he is portrayed by Robert Downey Jr. A genius billionaire, playboy, and philanthropist, Stark constructs advanced armor suits and serves as a founding member and leader of the Avengers.",
+  "iron man": "Iron Man (Tony Stark) is a legendary Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. In the Marvel Cinematic Universe, he is portrayed by Robert Downey Jr. A genius billionaire, playboy, and philanthropist, Stark constructs advanced power-armor suits with repulsor beam technology and flight capabilities, serving as a founding member and leader of the Avengers.",
   "tony stark": "Tony Stark is the alter ego of Iron Man, a genius inventor, industrialist, and founder of Stark Industries in Marvel Comics.",
   "marvel": "Marvel Entertainment is a premier media franchise renowned for iconic comic books, movies, and characters like Iron Man, Spider-Man, Captain America, Thor, Black Panther, the Avengers, and the X-Men.",
   "spider-man": "Spider-Man (Peter Parker) is a beloved Marvel Comics superhero created by Stan Lee and Steve Ditko. He gained spider-like abilities after being bitten by a radioactive spider and protects New York City under the motto: 'With great power comes great responsibility.'",
@@ -58,15 +58,15 @@ export function answerGeneralQuestion(userText: string): string | null {
 
   // 2. Greetings and Conversational Expressions
   if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening|whats up|sup)\b/i.test(cleaned)) {
-    return "Hello! How can I assist you today? Feel free to ask me any question, request code, or give me a task to automate.";
+    return "Hello! I am ready to assist you. Ask me anything or let me know what you'd like to work on.";
   }
 
   if (cleaned.includes("how are you") || cleaned.includes("how do you do")) {
-    return "I'm operating at peak performance and ready to help! What topic, question, or project are you working on today?";
+    return "I'm operating smoothly and ready to answer any questions or help with your tasks.";
   }
 
   if (cleaned.includes("thank you") || cleaned.includes("thanks")) {
-    return "You're very welcome! Let me know if there's anything else I can help you with.";
+    return "You're very welcome!";
   }
 
   // 3. "What about..." / "How about..." Questions
@@ -83,52 +83,46 @@ export function answerGeneralQuestion(userText: string): string | null {
       }
     }
 
-    return `Regarding **${topic}**:\n\n` +
-      `Here is a comprehensive overview of ${topic}:\n\n` +
-      `• **Overview & Significance**: ${topic} represents an important subject in its domain, playing a central role in related applications and studies.\n` +
-      `• **Key Characteristics**: It is defined by distinct mechanisms, core attributes, and fundamental principles.\n` +
-      `• **Practical Impact**: Understanding ${topic} helps in problem solving, strategic decision making, and deeper technical insights.\n\n` +
-      `Would you like a deeper analysis, specific examples, or code implementation related to ${topic}?`;
+    return `Here is the information regarding **${topic}**:\n\n` +
+      `• **Overview**: ${topic} plays a key role in its field, driven by fundamental principles and real-world applications.\n` +
+      `• **Key Details**: It is defined by its core characteristics, practical mechanisms, and overall impact within its domain.\n` +
+      `• **Significance**: Understanding ${topic} provides critical insights into how related systems operate and evolve.`;
   }
 
   // 4. Explanations ("How does X work?", "How to X?")
   if (/^how (does|do|can|to)\b/i.test(cleaned) || cleaned.includes("how works")) {
     const topic = cleaned.replace(/^how (does|do|can|to)\s+/i, "").replace(/\?/g, "");
-    return `To understand how ${topic} works, here is the breakdown:\n\n` +
-      `1. **Core Mechanism**: It operates on foundational principles designed to achieve high efficiency and structured performance.\n` +
-      `2. **Key Components**: The primary factors involve input processing, systematic execution, and output validation.\n` +
-      `3. **Practical Application**: In practice, this allows for reliable results and seamless integration in real-world scenarios.\n\n` +
-      `Would you like a deeper breakdown or specific code/mathematical formulation for ${topic}?`;
+    return `Here is how ${topic} works:\n\n` +
+      `1. **Core Mechanism**: It functions through a structured process that processes inputs and produces predictable results.\n` +
+      `2. **Key Components**: The operation relies on key underlying elements working together in sequence.\n` +
+      `3. **Practical Execution**: In real-world applications, this ensures stability, accuracy, and reliable performance.`;
   }
 
   // 5. Definitions ("What is X?", "What are X?")
   if (/^what (is|are|was|were)\b/i.test(cleaned) || cleaned.startsWith("definition of")) {
     const concept = cleaned.replace(/^(what (is|are|was|were)|definition of)\s+/i, "").replace(/\?/g, "");
-    return `**${concept.toUpperCase()}** refers to a key concept in its domain. Here is an overview:\n\n` +
-      `• **Definition**: It represents the core structure, principle, or entity associated with ${concept}.\n` +
-      `• **Context & Importance**: Understanding ${concept} is essential for analyzing broader systems, solving problems, or implementing solutions efficiently.\n` +
-      `• **Key Characteristic**: It is defined by its specific properties, behavior under operational conditions, and functional role.`;
+    return `**${concept.toUpperCase()}**:\n\n` +
+      `• **Definition**: It represents the core subject or principle associated with ${concept}.\n` +
+      `• **Key Details**: Characterized by its foundational properties, functional role, and practical relevance within its field.`;
   }
 
   // 6. Comparisons ("Difference between X and Y", "X vs Y")
   if (cleaned.includes("difference between") || cleaned.includes(" vs ") || cleaned.includes("versus")) {
-    return `When comparing these options, key distinctions include:\n\n` +
-      `• **Primary Function**: Each option addresses distinct needs depending on scale, speed, and design goals.\n` +
-      `• **Performance & Efficiency**: One may prioritize raw speed and simplicity, while the other emphasizes versatility and features.\n` +
-      `• **Recommendation**: Choose the first option for lightweight, focused tasks, or the second option when requiring comprehensive capabilities and extensibility.`;
+    return `Comparison breakdown:\n\n` +
+      `• **Primary Focus**: Each option is designed for specific use cases and trade-offs.\n` +
+      `• **Performance**: One emphasizes simplicity and speed, while the other provides broader flexibility and features.\n` +
+      `• **Summary**: Choose based on whether your priority is lightweight execution or comprehensive functionality.`;
   }
 
   // 7. Advice / Recommendations ("Best way to X", "How to learn X")
   if (cleaned.includes("best way") || cleaned.includes("how to learn") || cleaned.includes("recommendation") || cleaned.includes("tips for")) {
-    return `Here is a structured strategy to achieve the best results:\n\n` +
-      `1. **Build Strong Fundamentals**: Start with core concepts and clear examples before advancing to complex scenarios.\n` +
-      `2. **Practice Consistently**: Apply hands-on implementation and test your knowledge through real projects.\n` +
-      `3. **Optimize & Refine**: Measure performance, review feedback, and refine your approach continuously.\n\n` +
-      `If you have a specific goal in mind, share the details and I can outline a customized step-by-step roadmap for you!`;
+    return `Recommended approach:\n\n` +
+      `1. **Master the Fundamentals**: Focus on core principles first before moving to advanced concepts.\n` +
+      `2. **Practical Application**: Apply what you learn through hands-on practice and real-world testing.\n` +
+      `3. **Iterative Refinement**: Review outcomes, fix bottlenecks, and continuously optimize.`;
   }
 
-  // 8. General Inquiry Fallback - Natural & Direct Answer
+  // 8. General Inquiry Fallback
   return `Regarding **${raw}**:\n\n` +
-    `This touches on important concepts across research and practical applications. The core aspect involves analyzing the primary factors, understanding their underlying mechanics, and applying structured reasoning to reach an optimal conclusion.\n\n` +
-    `Let me know if you would like me to generate code, write a detailed guide, format a breakdown, or explore specific details on this!`;
+    `This is an important topic involving key foundational concepts, structured processes, and practical applications within its domain. Key factors include operational principles, system behavior, and practical utility.`;
 }
