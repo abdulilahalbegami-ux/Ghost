@@ -11,7 +11,6 @@ interface ChatActionsProps {
 export const ChatActions = ({ text }: ChatActionsProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [utterance, setUtterance] = useState<SpeechSynthesisUtterance | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -28,7 +27,7 @@ export const ChatActions = ({ text }: ChatActionsProps) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Vertex AI Response",
+          title: "Nuvio AI Response",
           text: text,
         });
         showSuccess("Shared successfully!");
@@ -51,11 +50,10 @@ export const ChatActions = ({ text }: ChatActionsProps) => {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
       } else {
-        window.speechSynthesis.cancel(); // Stop any ongoing speech
+        window.speechSynthesis.cancel();
         const newUtterance = new SpeechSynthesisUtterance(text);
         newUtterance.onend = () => setIsSpeaking(false);
         newUtterance.onerror = () => setIsSpeaking(false);
-        setUtterance(newUtterance);
         setIsSpeaking(true);
         window.speechSynthesis.speak(newUtterance);
       }
@@ -64,7 +62,6 @@ export const ChatActions = ({ text }: ChatActionsProps) => {
     }
   };
 
-  // Cleanup speech on unmount
   React.useEffect(() => {
     return () => {
       if (isSpeaking) {

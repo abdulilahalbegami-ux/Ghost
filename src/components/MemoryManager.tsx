@@ -74,7 +74,7 @@ export const MemoryManager = () => {
     setNewCategory("");
     setNewContent("");
     setNewTags("");
-    showSuccess("Vertex updated its memory core.");
+    showSuccess("Nuvio updated its memory core.");
   };
 
   const handleDeleteMemory = (id: string) => {
@@ -95,7 +95,7 @@ export const MemoryManager = () => {
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-indigo-500 animate-pulse" />
           <div>
-            <h2 className="text-lg font-semibold tracking-wider uppercase">Vertex Memory Core</h2>
+            <h2 className="text-lg font-semibold tracking-wider uppercase">Nuvio Memory Core</h2>
             <p className="text-[10px] text-zinc-400 dark:text-white/40">Semantic knowledge graph & user preferences</p>
           </div>
         </div>
@@ -180,7 +180,7 @@ export const MemoryManager = () => {
             </div>
 
             <form onSubmit={handleAddMemory} className="space-y-3 bg-zinc-100 dark:bg-white/5 p-4 rounded-xl border border-zinc-200 dark:border-white/10">
-              <p className="text-xs text-zinc-500 dark:text-white/60 uppercase tracking-wider font-bold">Teach Vertex something new</p>
+              <p className="text-xs text-zinc-500 dark:text-white/60 uppercase tracking-wider font-bold">Teach Nuvio something new</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input
                   type="text"
@@ -191,7 +191,7 @@ export const MemoryManager = () => {
                 />
                 <input
                   type="text"
-                  placeholder="What should Vertex remember?"
+                  placeholder="What should Nuvio remember?"
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   className="sm:col-span-2 bg-white dark:bg-black border border-zinc-200 dark:border-white/20 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, CheckCircle2, Clock, Play, Plus, Trash2, Cpu, DollarSign, ListTodo } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Trash2, Cpu, DollarSign, ListTodo } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 
 interface SubTask {
@@ -92,7 +92,7 @@ export const TaskPlanner = () => {
       ],
       cpuUsage: 15,
       cost: 0.005,
-      logs: ["Task scheduled in Vertex OS"],
+      logs: ["Task scheduled in Nuvio OS"],
     };
 
     setTasks([newTask, ...tasks]);
@@ -123,7 +123,7 @@ export const TaskPlanner = () => {
             ? {
                 ...t,
                 status: "completed",
-                details: "Task successfully completed by Vertex AI.",
+                details: "Task successfully completed by Nuvio AI.",
                 subTasks: t.subTasks.map((st) => ({ ...st, completed: true })),
                 logs: [...t.logs, "All sub-tasks completed", "Task finalized"],
               }

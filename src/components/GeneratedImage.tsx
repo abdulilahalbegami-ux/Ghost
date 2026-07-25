@@ -15,7 +15,7 @@ export const GeneratedImage = ({ prompt, imageUrl }: GeneratedImageProps) => {
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = `vertex-art-${Date.now()}.jpg`;
+    link.download = `nuvio-art-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -27,7 +27,7 @@ export const GeneratedImage = ({ prompt, imageUrl }: GeneratedImageProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/60">
           <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-          <span>Vertex Imagine Core</span>
+          <span>Nuvio Imagine Core</span>
         </div>
         <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/80">HD 1024x1024</span>
       </div>

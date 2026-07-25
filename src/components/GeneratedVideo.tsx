@@ -28,7 +28,7 @@ export const GeneratedVideo = ({ prompt, videoUrl }: GeneratedVideoProps) => {
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = videoUrl;
-    link.download = `vertex-motion-${Date.now()}.mp4`;
+    link.download = `nuvio-motion-${Date.now()}.mp4`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -40,7 +40,7 @@ export const GeneratedVideo = ({ prompt, videoUrl }: GeneratedVideoProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/60">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-          <span>Vertex Motion Core</span>
+          <span>Nuvio Motion Core</span>
         </div>
         <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/80">MP4 1080p</span>
       </div>

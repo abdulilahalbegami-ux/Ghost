@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, AlertCircle, ShoppingCart, Star, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Star, ThumbsUp, ThumbsDown, ShoppingCart } from "lucide-react";
 
 interface Product {
   name: string;
@@ -28,7 +28,7 @@ export const ProductComparer = ({ products, onSelect }: ProductComparerProps) =>
     <div className="space-y-4 bg-white dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-white">
       <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/5 pb-2">
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-white/60">Vertex Price Comparison</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-white/60">Nuvio Price Comparison</h4>
           <p className="text-[9px] text-zinc-400 dark:text-white/40">Real-time market scanning & recommendation engine</p>
         </div>
         <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80">
@@ -80,7 +80,7 @@ export const ProductComparer = ({ products, onSelect }: ProductComparerProps) =>
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/5 pb-2">
             <div className="flex items-center gap-2">
               <ThumbsUp className="w-4 h-4 text-indigo-500" />
-              <span className="text-xs font-bold uppercase tracking-wider">Vertex Recommendation Score</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Nuvio Recommendation Score</span>
             </div>
             <span className="text-sm font-bold font-mono text-indigo-500">{selectedProduct.score}/100</span>
           </div>

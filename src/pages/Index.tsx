@@ -34,7 +34,7 @@ import {
   Loader2,
   Code2,
 } from "lucide-react";
-import VertexLogo from "@/components/VertexLogo";
+import NuvioLogo from "@/components/NuvioLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
 import MemoryManager from "@/components/MemoryManager";
 import TaskPlanner from "@/components/TaskPlanner";
@@ -96,7 +96,7 @@ const Index = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [newUsername, setNewUsername] = useState("Agent Alpha");
 
-  const [aiModel, setAiModel] = useState("GPT-4o Reasoning Core");
+  const [aiModel, setAiModel] = useState("Nuvio GPT-4o Core");
   const [responseLength, setResponseLength] = useState<"short" | "balanced" | "detailed">("balanced");
   const [creativity, setCreativity] = useState(60);
   const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(true);
@@ -124,14 +124,14 @@ const Index = () => {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: "default-chat",
-      title: "Welcome to Vertex",
+      title: "Welcome to Nuvio",
       isPinned: false,
       timestamp: new Date(),
       messages: [
         {
           id: "welcome",
           sender: "vertex",
-          text: "Vertex OS online. Active Model: GPT-4o Reasoning Core. I am equipped for complex reasoning, programming, video & image generation, market price comparison, and background task automation. What are we building or solving today?",
+          text: "Nuvio OS online. Active Model: Nuvio GPT-4o Core. I am equipped for complex reasoning, programming, video & image generation, market price comparison, and background task automation. What are we building or solving today?",
           timestamp: new Date(),
         },
       ],
@@ -228,7 +228,7 @@ const Index = () => {
         {
           id: "welcome",
           sender: "vertex",
-          text: "Vertex OS online. Autonomous Agent initialization complete. Ready for your query.",
+          text: "Nuvio OS online. Autonomous Agent initialization complete. Ready for your query.",
           timestamp: new Date(),
         },
       ],
@@ -268,7 +268,7 @@ const Index = () => {
     if (!isLoggedIn) {
       setAuthMode("signin");
       setShowAuthModal(true);
-      showError("Please sign in to customize Vertex's personality core.");
+      showError("Please sign in to customize Nuvio's personality core.");
       return;
     }
     if (!personalityInput.trim()) {
@@ -276,7 +276,7 @@ const Index = () => {
       return;
     }
     setCustomPersonality(personalityInput);
-    showSuccess("Vertex personality core updated successfully!");
+    showSuccess("Nuvio personality core updated successfully!");
     
     updateActiveChatMessages((prev) => [
       ...prev,
@@ -327,7 +327,7 @@ const Index = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `vertex-chat-export-${Date.now()}.json`;
+      link.download = `nuvio-chat-export-${Date.now()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -390,7 +390,7 @@ const Index = () => {
       }
       return applyFlavor(
         `Here is a modular TypeScript solution tailored for high scalability:\n\n` +
-        `\`\`\`typescript\ninterface TaskConfig {\n  id: string;\n  retries: number;\n  timeoutMs: number;\n}\n\nasync function executeAutonomousTask(config: TaskConfig): Promise<boolean> {\n  console.log(\`[Vertex OS] Executing task: \${config.id}\`);\n  for (let attempt = 1; attempt <= config.retries; attempt++) {\n    try {\n      // Execute operation\n      return true;\n    } catch (err) {\n      if (attempt === config.retries) throw err;\n    }\n  }\n  return false;\n}\n\`\`\``
+        `\`\`\`typescript\ninterface TaskConfig {\n  id: string;\n  retries: number;\n  timeoutMs: number;\n}\n\nasync function executeAutonomousTask(config: TaskConfig): Promise<boolean> {\n  console.log(\`[Nuvio OS] Executing task: \${config.id}\`);\n  for (let attempt = 1; attempt <= config.retries; attempt++) {\n    try {\n      // Execute operation\n      return true;\n    } catch (err) {\n      if (attempt === config.retries) throw err;\n    }\n  }\n  return false;\n}\n\`\`\``
       );
     }
 
@@ -403,7 +403,7 @@ const Index = () => {
     }
 
     if (category === "doc_analysis") {
-      return applyFlavor(`Parsed document "${selectedDoc?.name || "file"}". Key Takeaways:\n1. Extracted metadata and full text structure.\n2. Identified key entities, dates, and actionable task items.\n3. Verified data integrity and saved summary to Vertex Memory Core.`);
+      return applyFlavor(`Parsed document "${selectedDoc?.name || "file"}". Key Takeaways:\n1. Extracted metadata and full text structure.\n2. Identified key entities, dates, and actionable task items.\n3. Verified data integrity and saved summary to Nuvio Memory Core.`);
     }
 
     if (category === "image_analysis") {
@@ -423,7 +423,7 @@ const Index = () => {
     }
 
     if (category === "messages") {
-      return applyFlavor("Scanned unread channels: 3 Slack messages, 2 emails. Most critical: Request from Sarah regarding Project Vertex deliverable. Suggested reply prepared: 'Hi Sarah, the updates are finalized and passed testing. Sending over full report shortly.'");
+      return applyFlavor("Scanned unread channels: 3 Slack messages, 2 emails. Most critical: Request from Sarah regarding Project Nuvio deliverable. Suggested reply prepared: 'Hi Sarah, the updates are finalized and passed testing. Sending over full report shortly.'");
     }
 
     // Default intelligent general response
@@ -762,7 +762,7 @@ const Index = () => {
     setIsLoggedIn(true);
     setShowAuthModal(false);
     setUsername(authEmail.split("@")[0] || "Agent Alpha");
-    showSuccess(authMode === "signin" ? "Welcome back to Vertex OS!" : "Account created successfully!");
+    showSuccess(authMode === "signin" ? "Welcome back to Nuvio OS!" : "Account created successfully!");
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -796,9 +796,9 @@ const Index = () => {
       <div className="flex flex-col h-full justify-between">
         <div className="space-y-6 flex-1 flex flex-col min-h-0">
           <div className="flex items-center gap-3 shrink-0">
-            <VertexLogo size="sm" />
+            <NuvioLogo size="sm" />
             <div>
-              <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Vertex</h1>
+              <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Nuvio</h1>
               <p className="text-[10px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
             </div>
           </div>
@@ -997,7 +997,7 @@ const Index = () => {
             <button
               onClick={() => {
                 setIsLoggedIn(false);
-                showSuccess("Logged out of Vertex OS.");
+                showSuccess("Logged out of Nuvio OS.");
               }}
               title="Sign Out"
               className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
@@ -1060,15 +1060,15 @@ const Index = () => {
             </button>
 
             <div className="md:hidden flex items-center gap-2">
-              <VertexLogo size="sm" />
+              <NuvioLogo size="sm" />
               <div>
-                <h1 className="text-sm font-bold tracking-wider uppercase text-zinc-900 dark:text-white">Vertex</h1>
+                <h1 className="text-sm font-bold tracking-wider uppercase text-zinc-900 dark:text-white">Nuvio</h1>
                 <p className="text-[8px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">v1.0</p>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Vertex Core: Online</span>
+              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Nuvio Core: Online</span>
               <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80 font-mono ml-2">
                 {aiModel}
               </span>
@@ -1222,7 +1222,7 @@ const Index = () => {
               <div className="text-center space-y-2">
                 <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Voice Interface</h2>
                 <p className="text-xs text-zinc-500 dark:text-white/60">
-                  {isListening ? "Vertex is listening..." : "Tap the core to speak"}
+                  {isListening ? "Nuvio is listening..." : "Tap the core to speak"}
                 </p>
               </div>
 
@@ -1231,7 +1231,1259 @@ const Index = () => {
                 className="relative group flex items-center justify-center"
               >
                 <div className="absolute inset-0 bg-zinc-200 dark:bg-white/5 rounded-full blur-xl group-hover:bg-zinc-300 dark:group-hover:bg-white/10 transition-all duration-500" />
-                <VertexLogo size="md" />
+                <NuvioLogo size="md" />
+              </button>
+
+              <div className="w-full">
+                <VoiceVisualizer isListening={isListening} />
+              </div>
+
+              {isListening && (
+                <div className="text-[10px] font-mono text-zinc-400 dark:text-white/40 animate-pulse bg-zinc-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-white/10">
+                  TRANSCRIPTION: "Analyzing input parameters..."
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "memory" && (
+            <div className="max-w-2xl mx-auto relative">
+              {!isLoggedIn && (
+                <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10 rounded-2xl border border-zinc-200 dark:<dyad-write path="src/pages/Index.tsx" description="Complete and fully formatted Index page with Nuvio branding and knowledge capabilities.">
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import {
+  MessageSquare,
+  Mic,
+  Brain,
+  Calendar,
+  Settings,
+  Send,
+  Sparkles,
+  User,
+  LogOut,
+  LogIn,
+  Volume2,
+  VolumeX,
+  X,
+  Cpu,
+  Download,
+  ImageIcon,
+  FileText,
+  Shield,
+  Bell,
+  Palette,
+  Globe,
+  Info,
+  Star,
+  Trash2,
+  Lock,
+  Check,
+  Plus,
+  Pin,
+  Menu,
+  Loader2,
+  Code2,
+} from "lucide-react";
+import NuvioLogo from "@/components/NuvioLogo";
+import VoiceVisualizer from "@/components/VoiceVisualizer";
+import MemoryManager from "@/components/MemoryManager";
+import TaskPlanner from "@/components/TaskPlanner";
+import ProductComparer from "@/components/ProductComparer";
+import ReasoningSteps, { Step } from "@/components/ReasoningSteps";
+import ChatActions from "@/components/ChatActions";
+import DocumentPreview from "@/components/DocumentPreview";
+import GeneratedImage from "@/components/GeneratedImage";
+import GeneratedVideo from "@/components/GeneratedVideo";
+import { showSuccess, showError } from "@/utils/toast";
+import { evaluateMathExpression } from "@/utils/mathEvaluator";
+import { answerGeneralQuestion } from "@/utils/questionResponder";
+
+interface Message {
+  id: string;
+  sender: "user" | "vertex";
+  text: string;
+  image?: string;
+  document?: { name: string; size: string };
+  generatedImage?: string;
+  generatedVideo?: string;
+  timestamp: Date;
+  steps?: Step[];
+  products?: any[];
+  isStreaming?: boolean;
+}
+
+interface Chat {
+  id: string;
+  title: string;
+  isPinned: boolean;
+  timestamp: Date;
+  messages: Message[];
+}
+
+const Index = () => {
+  const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  
+  // --- Authentication State ---
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [socialLoadingProvider, setSocialLoadingProvider] = useState<string | null>(null);
+
+  // Custom personality state defined by the user
+  const [customPersonality, setCustomPersonality] = useState<string>(
+    "An intelligent, highly competent, professional autonomous AI assistant."
+  );
+  const [personalityInput, setPersonalityInput] = useState<string>(
+    "An intelligent, highly competent, professional autonomous AI assistant."
+  );
+
+  // --- Comprehensive Settings States ---
+  const [username, setUsername] = useState("Agent Alpha");
+  const [password, setPassword] = useState("••••••••••••");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [newUsername, setNewUsername] = useState("Agent Alpha");
+
+  const [aiModel, setAiModel] = useState("Nuvio GPT-4o Core");
+  const [responseLength, setResponseLength] = useState<"short" | "balanced" | "detailed">("balanced");
+  const [creativity, setCreativity] = useState(60);
+  const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(true);
+  const [isSaveHistoryEnabled, setIsSaveHistoryEnabled] = useState(true);
+  const [isMemoryEnabled, setIsMemoryEnabled] = useState(true);
+
+  const [themeMode, setThemeMode] = useState<"dark" | "light" | "system">("dark");
+  const [accentColor, setAccentColor] = useState("#ffffff");
+  const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
+
+  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+
+  const [isDataCollectionEnabled, setIsDataCollectionEnabled] = useState(false);
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+
+  const [appLanguage, setAppLanguage] = useState("English (US)");
+  const [aiLanguage, setAiLanguage] = useState("Auto-detect");
+
+  const [isHapticEnabled, setIsHapticEnabled] = useState(true);
+  const [voiceSelection, setVoiceSelection] = useState("Male Neural (US)");
+  const [defaultOpeningPage, setDefaultOpeningPage] = useState<"new-chat" | "recent-chats">("new-chat");
+
+  // --- Chat History State ---
+  const [chats, setChats] = useState<Chat[]>([
+    {
+      id: "default-chat",
+      title: "Welcome to Nuvio",
+      isPinned: false,
+      timestamp: new Date(),
+      messages: [
+        {
+          id: "welcome",
+          sender: "vertex",
+          text: "Nuvio OS online. Active Model: Nuvio GPT-4o Core. I am equipped for complex reasoning, programming, video & image generation, market price comparison, and background task automation. What are we building or solving today?",
+          timestamp: new Date(),
+        },
+      ],
+    },
+  ]);
+  const [activeChatId, setActiveChatId] = useState<string>("default-chat");
+
+  const activeChat = chats.find((c) => c.id === activeChatId) || chats[0];
+  const activeMessages = activeChat ? activeChat.messages : [];
+
+  const [inputText, setInputText] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<{ name: string; size: string } | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [isVoiceMuted, setIsVoiceMuted] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [currentSteps, setCurrentSteps] = useState<Step[]>([]);
+  const [currentProducts, setCurrentProducts] = useState<any[]>([]);
+
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Theme Synchronization Effect
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (themeMode === "dark") {
+      root.classList.add("dark");
+    } else if (themeMode === "light") {
+      root.classList.remove("dark");
+    } else {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      if (systemTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    }
+  }, [themeMode]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chats, activeChatId, currentSteps]);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = "en-US";
+
+      rec.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        showSuccess("Voice transcribed successfully!");
+      };
+
+      rec.onerror = () => {
+        setIsListening(false);
+        showError("Speech recognition error. Please try again.");
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+    }
+  }, []);
+
+  const updateActiveChatMessages = (updater: Message[] | ((prev: Message[]) => Message[])) => {
+    setChats((prevChats) =>
+      prevChats.map((c) => {
+        if (c.id === activeChatId) {
+          const newMsgs = typeof updater === "function" ? updater(c.messages) : updater;
+          return { ...c, messages: newMsgs };
+        }
+        return c;
+      })
+    );
+  };
+
+  const handleNewChat = () => {
+    const newId = Date.now().toString();
+    const newChat: Chat = {
+      id: newId,
+      title: "New Chat",
+      isPinned: false,
+      timestamp: new Date(),
+      messages: [
+        {
+          id: "welcome",
+          sender: "vertex",
+          text: "Nuvio OS online. Autonomous Agent initialization complete. Ready for your query.",
+          timestamp: new Date(),
+        },
+      ],
+    };
+    setChats([newChat, ...chats]);
+    setActiveChatId(newId);
+    setActiveTab("chat");
+    setIsMobileSidebarOpen(false);
+    showSuccess("New chat session started.");
+  };
+
+  const handleTogglePin = (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, isPinned: !c.isPinned } : c))
+    );
+    const targetChat = chats.find((c) => c.id === chatId);
+    showSuccess(targetChat?.isPinned ? "Chat unpinned." : "Chat pinned to top.");
+  };
+
+  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (chats.length === 1) {
+      showError("You must keep at least one chat session.");
+      return;
+    }
+    const remaining = chats.filter((c) => c.id !== chatId);
+    setChats(remaining);
+    if (activeChatId === chatId) {
+      setActiveChatId(remaining[0].id);
+    }
+    showSuccess("Chat deleted.");
+  };
+
+  const handleSavePersonality = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Please sign in to customize Nuvio's personality core.");
+      return;
+    }
+    if (!personalityInput.trim()) {
+      showError("Personality description cannot be empty.");
+      return;
+    }
+    setCustomPersonality(personalityInput);
+    showSuccess("Nuvio personality core updated successfully!");
+    
+    updateActiveChatMessages((prev) => [
+      ...prev,
+      {
+        id: `sys-${Date.now()}`,
+        sender: "vertex",
+        text: `[System: Personality core re-indexed to: "${personalityInput}"]`,
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setSelectedDoc(null);
+        showSuccess("Image attached successfully.");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDoc({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+      });
+      setSelectedImage(null);
+      showSuccess("Document attached successfully.");
+    }
+  };
+
+  const handleExportChat = () => {
+    if (!isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Please sign in to export your chat history.");
+      return;
+    }
+    try {
+      const chatData = JSON.stringify(activeMessages, null, 2);
+      const blob = new Blob([chatData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `nuvio-chat-export-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showSuccess("Chat history exported successfully!");
+    } catch (err) {
+      showError("Failed to export chat history.");
+    }
+  };
+
+  const getSmartResponse = (category: string, userText: string): string => {
+    const lower = userText.toLowerCase().trim();
+    const desc = isLoggedIn ? customPersonality.toLowerCase() : "An intelligent, highly competent, professional autonomous AI assistant.".toLowerCase();
+
+    const applyFlavor = (baseText: string): string => {
+      if (desc.includes("pirate")) {
+        return `Ahoy, matey! ${baseText.replace(/\./g, "!")} Arrr, problem solved!`;
+      }
+      if (desc.includes("sarcastic") || desc.includes("sarcasm")) {
+        return `Oh, marvelous question. ${baseText} Naturally, that required my top-tier silicon processing.`;
+      }
+      if (desc.includes("cyberpunk") || desc.includes("hacker") || desc.includes("sci-fi")) {
+        return `[NEURAL CORE LINK] ${baseText} Sub-routine complete. Grid execution verified.`;
+      }
+      if (desc.includes("hype") || desc.includes("excited")) {
+        return `LETS GO! 🚀🔥 ${baseText.toUpperCase()} WE ARE SOLVING THIS IN RECORD TIME! 💥`;
+      }
+      return baseText;
+    };
+
+    // Math evaluation
+    const mathResult = evaluateMathExpression(userText);
+    if (mathResult) {
+      return applyFlavor(`Calculation complete:\n${mathResult}`);
+    }
+
+    // Direct general knowledge answers
+    const generalAnswer = answerGeneralQuestion(userText);
+    if (generalAnswer) {
+      return applyFlavor(generalAnswer);
+    }
+
+    // Code and Programming generation queries
+    if (
+      lower.includes("code") ||
+      lower.includes("function") ||
+      lower.includes("javascript") ||
+      lower.includes("python") ||
+      lower.includes("react") ||
+      lower.includes("html") ||
+      lower.includes("css") ||
+      lower.includes("sql") ||
+      lower.includes("script") ||
+      lower.includes("algorithm")
+    ) {
+      if (lower.includes("python") || lower.includes("sort") || lower.includes("array")) {
+        return applyFlavor(
+          `Here is an efficient, clean implementation with logarithmic time complexity O(N log N):\n\n` +
+          `\`\`\`python\ndef quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)\n\n# Example usage:\nnumbers = [3, 6, 8, 10, 1, 2, 1]\nprint("Sorted:", quick_sort(numbers))\n\`\`\``
+        );
+      }
+      return applyFlavor(
+        `Here is a modular TypeScript solution tailored for high scalability:\n\n` +
+        `\`\`\`typescript\ninterface TaskConfig {\n  id: string;\n  retries: number;\n  timeoutMs: number;\n}\n\nasync function executeAutonomousTask(config: TaskConfig): Promise<boolean> {\n  console.log(\`[Nuvio OS] Executing task: \${config.id}\`);\n  for (let attempt = 1; attempt <= config.retries; attempt++) {\n    try {\n      // Execute operation\n      return true;\n    } catch (err) {\n      if (attempt === config.retries) throw err;\n    }\n  }\n  return false;\n}\n\`\`\``
+      );
+    }
+
+    if (category === "video_generation") {
+      return applyFlavor(`Generated HD 1080p motion sequence for prompt: "${userText}". Rendered with 60fps frame interpolation.`);
+    }
+
+    if (category === "image_generation") {
+      return applyFlavor(`Synthesized high-fidelity visual asset for prompt: "${userText}". Rendered at 1024x1024 ultra-HD resolution.`);
+    }
+
+    if (category === "doc_analysis") {
+      return applyFlavor(`Parsed document "${selectedDoc?.name || "file"}". Key Takeaways:\n1. Extracted metadata and full text structure.\n2. Identified key entities, dates, and actionable task items.\n3. Verified data integrity and saved summary to Nuvio Memory Core.`);
+    }
+
+    if (category === "image_analysis") {
+      return applyFlavor("Image computer vision matrix scan complete. Key features identified: high contrast foreground objects, color histogram normalized, text OCR extracted, and stored in current session memory.");
+    }
+
+    if (category === "pizza") {
+      return applyFlavor("Market scan complete. Domino's Pepperoni Pizza is available for $12.99 with applied coupon code '50OFF'. Ready to complete checkout upon your signal.");
+    }
+
+    if (category === "haircut") {
+      return applyFlavor("Local barber schedule scanned. Haircut appointment with stylist Alex at Downtown Barbers is available tomorrow at 5:30 PM. Calendar conflict check passed.");
+    }
+
+    if (category === "dubai") {
+      return applyFlavor("Full 4-Day Dubai travel breakdown under $500:\n• Round-trip Flight: $240 (FlyDubai)\n• Accommodation: $135 (3 nights at Dubai Marina Hostel)\n• Local Transport & Food: $95\nSaved as an active project in Task Planner.");
+    }
+
+    if (category === "messages") {
+      return applyFlavor("Scanned unread channels: 3 Slack messages, 2 emails. Most critical: Request from Sarah regarding Project Nuvio deliverable. Suggested reply prepared: 'Hi Sarah, the updates are finalized and passed testing. Sending over full report shortly.'");
+    }
+
+    // Default intelligent general response
+    return applyFlavor(
+      `I have processed your request ("${userText}") using ${aiModel}. Based on multi-step context reasoning and semantic graph indexing, I can automate this task, generate code, format a detailed analysis, or structure a background execution plan. Let me know how you would like to proceed!`
+    );
+  };
+
+  const simulateStreamingResponse = (
+    userText: string,
+    stepsList: Step[],
+    category: string,
+    productsList?: any[],
+    generatedImgUrl?: string,
+    generatedVidUrl?: string
+  ) => {
+    setIsStreaming(true);
+    setCurrentSteps(stepsList);
+    if (productsList) setCurrentProducts(productsList);
+
+    let currentStepIndex = 0;
+    const isGeneration = category === "image_generation" || category === "video_generation";
+    const stepDelay = isGeneration ? 25 : 200;
+
+    const runNextStep = () => {
+      if (currentStepIndex < stepsList.length) {
+        setCurrentSteps((prev) =>
+          prev.map((s, idx) =>
+            idx === currentStepIndex
+              ? { ...s, status: "running" }
+              : idx < currentStepIndex
+              ? { ...s, status: "completed" }
+              : s
+          )
+        );
+
+        setTimeout(() => {
+          setCurrentSteps((prev) =>
+            prev.map((s, idx) => (idx === currentStepIndex ? { ...s, status: "completed" } : s))
+          );
+          currentStepIndex++;
+          runNextStep();
+        }, stepDelay);
+      } else {
+        setIsStreaming(false);
+        const finalText = getSmartResponse(category, userText);
+
+        if (isGeneration) {
+          const newMessage: Message = {
+            id: Date.now().toString(),
+            sender: "vertex",
+            text: finalText,
+            timestamp: new Date(),
+            steps: stepsList,
+            products: productsList,
+            generatedImage: generatedImgUrl,
+            generatedVideo: generatedVidUrl,
+            isStreaming: false,
+          };
+
+          updateActiveChatMessages((prev) => [...prev, newMessage]);
+          setCurrentSteps([]);
+          setCurrentProducts([]);
+          showSuccess("Generation complete.");
+        } else {
+          let streamedText = "";
+          const words = finalText.split(" ");
+          let wordIndex = 0;
+
+          const newMessage: Message = {
+            id: Date.now().toString(),
+            sender: "vertex",
+            text: "",
+            timestamp: new Date(),
+            steps: stepsList,
+            products: productsList,
+            generatedImage: generatedImgUrl,
+            generatedVideo: generatedVidUrl,
+            isStreaming: true,
+          };
+
+          updateActiveChatMessages((prev) => [...prev, newMessage]);
+
+          const streamInterval = setInterval(() => {
+            if (wordIndex < words.length) {
+              streamedText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
+              updateActiveChatMessages((prev) =>
+                prev.map((m) => (m.id === newMessage.id ? { ...m, text: streamedText } : m))
+              );
+              wordIndex++;
+            } else {
+              clearInterval(streamInterval);
+              updateActiveChatMessages((prev) =>
+                prev.map((m) => (m.id === newMessage.id ? { ...m, isStreaming: false } : m))
+              );
+              setCurrentSteps([]);
+              setCurrentProducts([]);
+              showSuccess("Task completed successfully.");
+            }
+          }, 15);
+        }
+      }
+    };
+
+    runNextStep();
+  };
+
+  const handleSendMessage = (text: string) => {
+    if ((!text.trim() && !selectedImage && !selectedDoc) || isStreaming) return;
+
+    const lowerText = text.toLowerCase();
+
+    if ((lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) && !isLoggedIn) {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+      showError("Video generation is exclusive to registered operators. Please sign in.");
+      return;
+    }
+
+    if (activeChat.title === "New Chat" && text.trim()) {
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === activeChatId
+            ? { ...c, title: text.slice(0, 24) + (text.length > 24 ? "..." : "") }
+            : c
+        )
+      );
+    }
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      sender: "user",
+      text: text || (selectedImage ? "Sent an image" : "Uploaded a document"),
+      image: selectedImage || undefined,
+      document: selectedDoc || undefined,
+      timestamp: new Date(),
+    };
+
+    updateActiveChatMessages((prev) => [...prev, userMessage]);
+    setInputText("");
+    setSelectedImage(null);
+    setSelectedDoc(null);
+
+    const isMath = evaluateMathExpression(text) !== null;
+    const isGeneralQuestion = answerGeneralQuestion(text) !== null;
+
+    if (isMath) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Parsing numerical tokens", status: "pending", log: "Extracting operators & operands..." },
+          { id: "2", title: "Executing CPU mathematical calculation", status: "pending", log: "Evaluating precision result..." },
+        ],
+        "math"
+      );
+    } else if (isGeneralQuestion) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Analyzing inquiry intent", status: "pending", log: "Evaluating semantic concepts..." },
+          { id: "2", title: "Querying internal knowledge graph", status: "pending", log: "Fetching verified factual consensus..." },
+        ],
+        "general"
+      );
+    } else if (lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) {
+      const generatedVidUrl = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32156-large.mp4";
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Parsing camera motion & prompt vectors", status: "pending", log: "Calculating optical flow..." },
+          { id: "2", title: "Initializing video diffusion neural engine", status: "pending", log: "Allocating GPU tensors..." },
+          { id: "3", title: "Synthesizing motion keyframes", status: "pending", log: "Rendering keyframe sequence..." },
+          { id: "4", title: "60fps Frame Interpolation & Upscaling", status: "pending", log: "Exporting 1080p stream..." },
+        ],
+        "video_generation",
+        undefined,
+        undefined,
+        generatedVidUrl
+      );
+    } else if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint") || lowerText.includes("picture")) {
+      const randomSeed = Math.floor(Math.random() * 9999);
+      const promptEncoded = encodeURIComponent(text.trim() || "futuristic cybernetic core");
+      const generatedImgUrl = `https://image.pollinations.ai/prompt/${promptEncoded}?width=1024&height=1024&nologo=true&seed=${randomSeed}`;
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Tokenizing visual art prompt", status: "pending", log: "Constructing clip embeddings..." },
+          { id: "2", title: "Sampling latent diffusion space", status: "pending", log: "Iterating 50 denoising steps..." },
+          { id: "3", title: "Post-processing color palette & detail upscale", status: "pending", log: "Exporting 1024x1024 image..." },
+        ],
+        "image_generation",
+        undefined,
+        generatedImgUrl
+      );
+    } else if (selectedDoc) {
+      simulateStreamingResponse(
+        text || "Analyze document",
+        [
+          { id: "1", title: "Decrypting file buffer", status: "pending", log: "Reading stream headers..." },
+          { id: "2", title: "Extracting optical text & structure", status: "pending", log: "Parsing semantic paragraphs..." },
+          { id: "3", title: "Indexing document insights to Memory Core", status: "pending", log: "Committing knowledge graph..." },
+        ],
+        "doc_analysis"
+      );
+    } else if (selectedImage) {
+      simulateStreamingResponse(
+        text || "Analyze image",
+        [
+          { id: "1", title: "Decoding image array", status: "pending", log: "Reading matrix metadata..." },
+          { id: "2", title: "Executing computer vision segmentation", status: "pending", log: "Detecting objects & scene boundaries..." },
+          { id: "3", title: "Cataloging visual vector representation", status: "pending", log: "Saved to active session..." },
+        ],
+        "image_analysis"
+      );
+    } else if (lowerText.includes("pizza")) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Locating nearby pizza vendors", status: "pending", log: "Scanning Domino's, Pizza Hut, Papa John's..." },
+          { id: "2", title: "Comparing price & discount coupons", status: "pending", log: "Applied coupon '50OFF' at Domino's ($12.99)..." },
+          { id: "3", title: "Drafting checkout order", status: "pending", log: "Order ready for operator authorization." },
+        ],
+        "pizza",
+        [
+          {
+            name: "Domino's Pepperoni Pizza",
+            price: 12.99,
+            delivery: "20-30 mins",
+            rating: "4.5★",
+            source: "Domino's App",
+            isBest: true,
+            score: 95,
+            pros: ["Cheapest option", "Fastest delivery", "Applied coupon '50OFF'"],
+            cons: ["Limited crust options"],
+            features: { crust_type: "Hand Tossed", size: "Medium 12\"", slices: "8", extra_cheese: false },
+          },
+          {
+            name: "Pizza Hut Pepperoni",
+            price: 14.99,
+            delivery: "35-45 mins",
+            rating: "4.2★",
+            source: "Pizza Hut",
+            isBest: false,
+            score: 82,
+            pros: ["Stuffed crust available"],
+            cons: ["More expensive", "Longer delivery time"],
+            features: { crust_type: "Pan Pizza", size: "Medium 12\"", slices: "8", extra_cheese: true },
+          },
+          {
+            name: "Papa John's Pepperoni",
+            price: 15.50,
+            delivery: "25-35 mins",
+            rating: "4.3★",
+            source: "Papa John's",
+            isBest: false,
+            score: 78,
+            pros: ["Garlic dipping sauce included"],
+            cons: ["Highest price"],
+            features: { crust_type: "Original", size: "Medium 12\"", slices: "8", extra_cheese: false },
+          },
+        ]
+      );
+    } else if (lowerText.includes("haircut")) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Checking calendar schedule", status: "pending", log: "Analyzing tomorrow after 5:00 PM..." },
+          { id: "2", title: "Querying local barber availability", status: "pending", log: "Found 'Downtown Barbers' open slot..." },
+          { id: "3", title: "Matching stylist Alex availability", status: "pending", log: "Reserved 5:30 PM provisional slot." },
+        ],
+        "haircut"
+      );
+    } else if (lowerText.includes("dubai")) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Searching budget flight feeds", status: "pending", log: "FlyDubai round-trip found for $240..." },
+          { id: "2", title: "Scanning top hostel ratings", status: "pending", log: "Dubai Marina Hostel $45/night..." },
+          { id: "3", title: "Structuring 4-day itinerary", status: "pending", log: "Constructing budget allocation plan..." },
+        ],
+        "dubai"
+      );
+    } else if (lowerText.includes("messages") || lowerText.includes("reply")) {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Scanning active communication feeds", status: "pending", log: "3 Slack, 2 Emails detected..." },
+          { id: "2", title: "Parsing message urgency", status: "pending", log: "Urgent status on Sarah's project inquiry..." },
+          { id: "3", title: "Formatting automated response draft", status: "pending", log: "Drafted polite response." },
+        ],
+        "messages"
+      );
+    } else {
+      simulateStreamingResponse(
+        text,
+        [
+          { id: "1", title: "Deconstructing prompt semantics", status: "pending", log: "Parsing intent tokens..." },
+          { id: "2", title: "Synthesizing multi-model response", status: "pending", log: "Formulating optimized solution..." },
+        ],
+        "default"
+      );
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      showSuccess("Voice mode deactivated.");
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+      } else {
+        setIsListening(true);
+        setActiveTab("voice");
+        showSuccess("Voice mode active. Speak now.");
+        setTimeout(() => {
+          if (isListening) {
+            setIsListening(false);
+            handleSendMessage("Order me the cheapest pepperoni pizza.");
+          }
+        }, 2000);
+      }
+    }
+  };
+
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail || !authPassword) {
+      showError("Please fill in all fields.");
+      return;
+    }
+    setIsLoggedIn(true);
+    setShowAuthModal(false);
+    setUsername(authEmail.split("@")[0] || "Agent Alpha");
+    showSuccess(authMode === "signin" ? "Welcome back to Nuvio OS!" : "Account created successfully!");
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    const urls: Record<string, string> = {
+      Google: "https://accounts.google.com/",
+      GitHub: "https://github.com/login",
+      Apple: "https://appleid.apple.com/",
+    };
+
+    const mockUsernames: Record<string, string> = {
+      Google: "Google Operator",
+      GitHub: "Octocat Dev",
+      Apple: "Apple Operator",
+    };
+
+    const targetUrl = urls[provider];
+    if (targetUrl) {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+      setIsLoggedIn(true);
+      setShowAuthModal(false);
+      setUsername(mockUsernames[provider] || "Social Operator");
+      showSuccess(`Authenticated via ${provider}.`);
+    }
+  };
+
+  const SidebarContent = () => {
+    const pinnedChats = chats.filter((c) => c.isPinned);
+    const recentChats = chats.filter((c) => !c.isPinned);
+
+    return (
+      <div className="flex flex-col h-full justify-between">
+        <div className="space-y-6 flex-1 flex flex-col min-h-0">
+          <div className="flex items-center gap-3 shrink-0">
+            <NuvioLogo size="sm" />
+            <div>
+              <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Nuvio</h1>
+              <p className="text-[10px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+          >
+            <Plus className="w-4 h-4" /> New Chat
+          </button>
+
+          <div className="flex-1 flex flex-col min-h-0 space-y-4">
+            <div className="flex items-center justify-between shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/40">Conversations</p>
+              <span className="text-[9px] font-mono text-zinc-400 dark:text-white/30">{chats.length} Active</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
+              {pinnedChats.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400/60 px-2 flex items-center gap-1">
+                    <Pin className="w-2.5 h-2.5 fill-current" /> Pinned
+                  </p>
+                  {pinnedChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => {
+                        setActiveChatId(chat.id);
+                        setActiveTab("chat");
+                        setIsMobileSidebarOpen(false);
+                      }}
+                      className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-all ${
+                        activeChatId === chat.id
+                          ? "bg-zinc-200 dark:bg-white/10 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/10"
+                          : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <MessageSquare className="w-3.5 h-3.5 shrink-0 text-amber-500 dark:text-amber-400" />
+                        <span className="truncate font-medium">{chat.title}</span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => handleTogglePin(chat.id, e)}
+                          title="Unpin Chat"
+                          className="p-1 hover:bg-zinc-300 dark:hover:bg-white/10 rounded text-amber-500 dark:text-amber-400"
+                        >
+                          <Pin className="w-3 h-3 fill-current" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteChat(chat.id, e)}
+                          title="Delete Chat"
+                          className="p-1 hover:bg-zinc-300 dark:hover:bg-white/10 rounded text-zinc-400 dark:text-white/40 hover:text-red-500"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                {pinnedChats.length > 0 && (
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-white/30 px-2">Recent</p>
+                )}
+                {recentChats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => {
+                      setActiveChatId(chat.id);
+                      setActiveTab("chat");
+                      setIsMobileSidebarOpen(false);
+                    }}
+                    className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-all ${
+                      activeChatId === chat.id
+                        ? "bg-zinc-200 dark:bg-white/10 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/10"
+                        : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate font-medium">{chat.title}</span>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => handleTogglePin(chat.id, e)}
+                        title="Pin Chat"
+                        className="p-1 hover:bg-zinc-300 dark:hover:bg-white/10 rounded text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white"
+                      >
+                        <Pin className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteChat(chat.id, e)}
+                        title="Delete Chat"
+                        className="p-1 hover:bg-zinc-300 dark:hover:bg-white/10 rounded text-zinc-400 dark:text-white/40 hover:text-red-500"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <nav className="space-y-1 shrink-0 border-t border-zinc-200 dark:border-white/5 pt-4">
+            <button
+              onClick={() => {
+                setActiveTab("chat");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                activeTab === "chat"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+                  : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Autonomous Chat</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("voice");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                activeTab === "voice"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+                  : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5" />
+              <span>Voice Interface</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("memory");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                activeTab === "memory"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+                  : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+              }`}
+            >
+              <Brain className="w-3.5 h-3.5" />
+              <span>Memory Core</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("tasks");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                activeTab === "tasks"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+                  : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Automated Tasks</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("settings");
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                activeTab === "settings"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(255,255,255,0.15)]"
+                  : "text-zinc-600 dark:text-white/60 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:text-white dark:hover:bg-white/5"
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>System Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        <div className="border-t border-zinc-200 dark:border-white/10 pt-4 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/20 flex items-center justify-center">
+              <User className="w-5 h-5 text-zinc-800 dark:text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">{isLoggedIn ? username : "Guest Operator"}</p>
+              <p className="text-xs text-zinc-400 dark:text-white/40">{isLoggedIn ? "Premium Operator" : "Free Tier"}</p>
+            </div>
+          </div>
+          {isLoggedIn ? (
+            <button
+              onClick={() => {
+                setIsLoggedIn(false);
+                showSuccess("Logged out of Nuvio OS.");
+              }}
+              title="Sign Out"
+              className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setAuthMode("signin");
+                setShowAuthModal(true);
+              }}
+              title="Sign In"
+              className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-white font-sans flex flex-col md:flex-row transition-colors duration-200">
+      
+      <div className="hidden md:flex md:w-64 lg:w-72 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-white/10 p-6 flex-col justify-between shrink-0 h-screen">
+        <SidebarContent />
+      </div>
+
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          <div className="relative w-72 max-w-xs bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-white/10 p-6 flex flex-col h-full z-10 animate-in slide-in-from-left duration-200">
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="absolute top-4 right-4 text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex-1 min-h-0 mt-4">
+              <SidebarContent />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col bg-zinc-50 dark:bg-black relative overflow-hidden h-screen transition-colors duration-200">
+        
+        <div className="h-14 border-b border-zinc-200 dark:border-white/10 px-6 flex items-center justify-between bg-white/80 dark:bg-zinc-950/50 backdrop-blur-md z-10 shrink-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-1.5 text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="md:hidden flex items-center gap-2">
+              <NuvioLogo size="sm" />
+              <div>
+                <h1 className="text-sm font-bold tracking-wider uppercase text-zinc-900 dark:text-white">Nuvio</h1>
+                <p className="text-[8px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">v1.0</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Nuvio Core: Online</span>
+              <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80 font-mono ml-2">
+                {aiModel}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={handleExportChat}
+                title="Export Chat History"
+                className="text-xs font-mono text-zinc-600 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1.5 bg-zinc-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/10 transition-all relative"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export</span>
+                {!isLoggedIn && <Lock className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 absolute -top-1 -right-1" />}
+              </button>
+              <button
+                onClick={() => setIsVoiceMuted(!isVoiceMuted)}
+                className="text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
+                {isVoiceMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <span className="text-xs font-mono text-zinc-400 dark:text-white/40">LATENCY: 8ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-28 bg-zinc-50 dark:bg-black transition-colors duration-200">
+          {activeTab === "chat" && (
+            <div className="max-w-3xl mx-auto h-full flex flex-col justify-between gap-4">
+              <div className="space-y-5">
+                {activeMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex flex-col gap-1.5 group ${msg.sender === "user" ? "items-end" : "items-start"}`}
+                  >
+                    <div
+                      className={`max-w-[90%] md:max-w-[85%] p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed transition-all flex flex-col gap-2.5 ${
+                        msg.sender === "user"
+                          ? "bg-zinc-900 text-white dark:bg-white dark:text-black font-medium rounded-tr-none"
+                          : "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 rounded-tl-none"
+                      }`}
+                    >
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="Sent attachment"
+                          className="max-w-full max-h-48 rounded-xl object-cover border border-zinc-200 dark:border-white/10"
+                        />
+                      )}
+                      {msg.document && (
+                        <DocumentPreview
+                          name={msg.document.name}
+                          size={msg.document.size}
+                          interactive={false}
+                        />
+                      )}
+                      
+                      {/* Code Block rendering detection */}
+                      {msg.text.includes("```") ? (
+                        <div className="space-y-2">
+                          {msg.text.split("```").map((part, index) => {
+                            if (index % 2 === 1) {
+                              const firstLineEnd = part.indexOf("\n");
+                              const lang = firstLineEnd !== -1 ? part.slice(0, firstLineEnd) : "";
+                              const code = firstLineEnd !== -1 ? part.slice(firstLineEnd + 1) : part;
+                              return (
+                                <div key={index} className="my-2 bg-zinc-950 text-emerald-400 p-3 rounded-xl border border-white/10 font-mono text-xs overflow-x-auto relative group/code">
+                                  <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-2 text-[10px] text-zinc-400">
+                                    <span className="uppercase font-bold flex items-center gap-1">
+                                      <Code2 className="w-3 h-3 text-indigo-400" /> {lang || "code"}
+                                    </span>
+                                    <button
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(code);
+                                        showSuccess("Code snippet copied!");
+                                      }}
+                                      className="text-zinc-400 hover:text-white text-[10px] px-2 py-0.5 rounded bg-white/5"
+                                    >
+                                      Copy
+                                    </button>
+                                  </div>
+                                  <pre>{code}</pre>
+                                </div>
+                              );
+                            }
+                            return part ? <p key={index} className="whitespace-pre-wrap">{part}</p> : null;
+                          })}
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                      )}
+                    </div>
+
+                    {!msg.isStreaming && (
+                      <ChatActions text={msg.text} />
+                    )}
+
+                    {msg.generatedImage && (
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
+                        <GeneratedImage prompt={msg.text} imageUrl={msg.generatedImage} />
+                      </div>
+                    )}
+
+                    {msg.generatedVideo && (
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
+                        <GeneratedVideo prompt={msg.text} videoUrl={msg.generatedVideo} />
+                      </div>
+                    )}
+
+                    {msg.steps && msg.steps.length > 0 && (
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
+                        <ReasoningSteps steps={msg.steps} />
+                      </div>
+                    )}
+
+                    {msg.products && msg.products.length > 0 && (
+                      <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
+                        <ProductComparer
+                          products={msg.products}
+                          onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {isStreaming && currentSteps.length > 0 && (
+                  <div className="w-full max-w-[90%] md:max-w-[85%]">
+                    <ReasoningSteps steps={currentSteps} />
+                  </div>
+                )}
+
+                {isStreaming && currentProducts.length > 0 && (
+                  <div className="w-full max-w-[90%] md:max-w-[85%]">
+                    <ProductComparer
+                      products={currentProducts}
+                      onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
+                    />
+                  </div>
+                )}
+
+                <div ref={chatEndRef} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "voice" && (
+            <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center gap-8 py-8">
+              <div className="text-center space-y-2">
+                <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Voice Interface</h2>
+                <p className="text-xs text-zinc-500 dark:text-white/60">
+                  {isListening ? "Nuvio is listening..." : "Tap the core to speak"}
+                </p>
+              </div>
+
+              <button
+                onClick={handleVoiceToggle}
+                className="relative group flex items-center justify-center"
+              >
+                <div className="absolute inset-0 bg-zinc-200 dark:bg-white/5 rounded-full blur-xl group-hover:bg-zinc-300 dark:group-hover:bg-white/10 transition-all duration-500" />
+                <NuvioLogo size="md" />
               </button>
 
               <div className="w-full">
@@ -1253,7 +2505,7 @@ const Index = () => {
                   <Lock className="w-8 h-8 text-amber-500 dark:text-amber-400 mb-3 animate-bounce" />
                   <h3 className="text-lg font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Autonomous Memory Core</h3>
                   <p className="text-xs text-zinc-500 dark:text-white/60 max-w-sm mt-1.5 mb-4">
-                    Vertex's persistent memory core is exclusive to registered operators. Sign in to let Vertex remember your preferences across sessions.
+                    Nuvio's persistent memory core is exclusive to registered operators. Sign in to let Nuvio remember your preferences across sessions.
                   </p>
                   <button
                     onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
@@ -1277,7 +2529,7 @@ const Index = () => {
             <div className="max-w-2xl mx-auto space-y-8 text-zinc-900 dark:text-white pb-12">
               <div className="border-b border-zinc-200 dark:border-white/10 pb-3">
                 <h2 className="text-xl font-bold tracking-wider uppercase">System Settings</h2>
-                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Vertex OS environment</p>
+                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Nuvio OS environment</p>
               </div>
 
               {!isLoggedIn && (
@@ -1311,7 +2563,7 @@ const Index = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <p className="text-xs font-semibold">Profile Username</p>
-                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your operator identity across Vertex OS</p>
+                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your operator identity across Nuvio OS</p>
                         </div>
                         {isEditingProfile ? (
                           <div className="flex items-center gap-2">
@@ -1370,7 +2622,7 @@ const Index = () => {
                       <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                         <button
                           onClick={() => {
-                            if (confirm("Are you absolutely sure you want to delete your Vertex account? This action is irreversible.")) {
+                            if (confirm("Are you absolutely sure you want to delete your Nuvio account? This action is irreversible.")) {
                               setIsLoggedIn(false);
                               showSuccess("Account deleted successfully.");
                             }
@@ -1380,7 +2632,7 @@ const Index = () => {
                           <Trash2 className="w-3.5 h-3.5" /> Delete Account
                         </button>
                         <button
-                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Vertex OS."); }}
+                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Nuvio OS."); }}
                           className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
                         >
                           <LogOut className="w-3.5 h-3.5" /> Sign Out
@@ -1422,12 +2674,12 @@ const Index = () => {
                         <Lock className="w-5 h-5 text-amber-500 dark:text-amber-400 mb-1.5" />
                         <p className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Custom Personality Core</p>
                         <p className="text-[10px] text-zinc-500 dark:text-white/60 max-w-xs mt-0.5">
-                          Sign in to customize Vertex's behavior, tone, and response style.
+                          Sign in to customize Nuvio's behavior, tone, and response style.
                         </p>
                       </div>
                     )}
                     <p className="text-xs font-semibold">Custom Personality Core</p>
-                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Explain exactly how you want Vertex to behave, speak, and respond.</p>
+                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Explain exactly how you want Nuvio to behave, speak, and respond.</p>
                     <form onSubmit={handleSavePersonality} className="space-y-2">
                       <textarea
                         value={personalityInput}
@@ -1457,7 +2709,7 @@ const Index = () => {
                       }}
                       className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
                     >
-                      <option value="GPT-4o Reasoning Core">GPT-4o Reasoning Core</option>
+                      <option value="Nuvio GPT-4o Core">Nuvio GPT-4o Core</option>
                       <option value="Claude 3.5 Sonnet Agent">Claude 3.5 Sonnet Agent</option>
                       <option value="DeepSeek R1 Thinker">DeepSeek R1 Thinker</option>
                       <option value="Gemini 1.5 Pro Ultra">Gemini 1.5 Pro Ultra</option>
@@ -1509,7 +2761,7 @@ const Index = () => {
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Web Search Agent</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Vertex to browse the live web for real-time data</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio to browse the live web for real-time data</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1559,7 +2811,7 @@ const Index = () => {
                     )}
                     <div>
                       <p className="text-xs font-semibold">Autonomous Memory Core</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Vertex to remember facts across sessions</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio to remember facts across sessions</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1754,7 +3006,7 @@ const Index = () => {
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">Anonymous Data Collection</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Share telemetry to help improve Vertex OS</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Share telemetry to help improve Nuvio OS</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1937,11 +3189,11 @@ const Index = () => {
                   </div>
                   <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
                     <span className="text-zinc-500 dark:text-white/60">Contact Support</span>
-                    <a href="mailto:support@vertex.ai" className="text-zinc-700 dark:text-white hover:underline">support@vertex.ai</a>
+                    <a href="mailto:support@nuvio.ai" className="text-zinc-700 dark:text-white hover:underline">support@nuvio.ai</a>
                   </div>
                   <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
                     <span className="text-zinc-500 dark:text-white/60">Rate the App</span>
-                    <button onClick={() => showSuccess("Thank you for rating Vertex OS 5 stars!")} className="text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 flex items-center gap-1">
+                    <button onClick={() => showSuccess("Thank you for rating Nuvio OS 5 stars!")} className="text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 flex items-center gap-1">
                       ★★★★★
                     </button>
                   </div>
@@ -2009,7 +3261,7 @@ const Index = () => {
                 </button>
                 <input
                   type="text"
-                  placeholder="Ask Vertex to reason, write code, generate media..."
+                  placeholder="Ask Nuvio to reason, write code, generate media..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
@@ -2102,9 +3354,9 @@ const Index = () => {
             </button>
 
             <div className="text-center space-y-1">
-              <VertexLogo size="sm" />
+              <NuvioLogo size="sm" />
               <h3 className="text-base font-bold uppercase tracking-wider mt-2 text-zinc-900 dark:text-white">
-                {authMode === "signin" ? "Sign In to Vertex OS" : "Create Free Account"}
+                {authMode === "signin" ? "Sign In to Nuvio OS" : "Create Free Account"}
               </h3>
               <p className="text-[10px] text-zinc-500 dark:text-white/40">
                 Unlock persistent memory, custom personalities, and video generation.
@@ -2117,7 +3369,7 @@ const Index = () => {
                 <input
                   type="email"
                   required
-                  placeholder="operator@vertex.ai"
+                  placeholder="operator@nuvio.ai"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
                   className="w-full bg-white dark:bg-black border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-white/30"
