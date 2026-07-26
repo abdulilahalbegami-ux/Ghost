@@ -84,10 +84,10 @@ const Index = () => {
 
   // Custom personality state defined by the user
   const [customPersonality, setCustomPersonality] = useState<string>(
-    "A friendly, natural, and helpful conversational partner."
+    "A friendly, natural, and helpful chatbot."
   );
   const [personalityInput, setPersonalityInput] = useState<string>(
-    "A friendly, natural, and helpful conversational partner."
+    "A friendly, natural, and helpful chatbot."
   );
 
   // --- Comprehensive Settings States ---
@@ -124,14 +124,14 @@ const Index = () => {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: "default-chat",
-      title: "Welcome to Nuvio Test",
+      title: "Chat",
       isPinned: false,
       timestamp: new Date(),
       messages: [
         {
           id: "welcome",
           sender: "vertex",
-          text: "Hey there! I'm Nuvio Test. How's your day going? Feel free to ask questions, chat casually, or ask for step-by-step help with any task!",
+          text: "Hello! How can I help you today?",
           timestamp: new Date(),
         },
       ],
@@ -228,7 +228,7 @@ const Index = () => {
         {
           id: "welcome",
           sender: "vertex",
-          text: "Hey! What's on your mind today?",
+          text: "Hello! How can I help you today?",
           timestamp: new Date(),
         },
       ],
@@ -268,7 +268,7 @@ const Index = () => {
     if (!isLoggedIn) {
       setAuthMode("signin");
       setShowAuthModal(true);
-      showError("Please sign in to customize Nuvio's personality core.");
+      showError("Please sign in to customize personality settings.");
       return;
     }
     if (!personalityInput.trim()) {
@@ -276,14 +276,14 @@ const Index = () => {
       return;
     }
     setCustomPersonality(personalityInput);
-    showSuccess("Nuvio personality core updated successfully!");
+    showSuccess("Personality settings updated successfully!");
     
     updateActiveChatMessages((prev) => [
       ...prev,
       {
         id: `sys-${Date.now()}`,
         sender: "vertex",
-        text: `Got it! I will adapt my style to match: "${personalityInput}"`,
+        text: `Got it! I will adapt my style accordingly.`,
         timestamp: new Date(),
       },
     ]);
@@ -327,7 +327,7 @@ const Index = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `nuvio-test-chat-export-${Date.now()}.json`;
+      link.download = `chat-export-${Date.now()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -339,28 +339,17 @@ const Index = () => {
 
   const getSmartResponse = (category: string, userText: string): string => {
     const lower = userText.toLowerCase().trim();
-    const desc = isLoggedIn ? customPersonality.toLowerCase() : "A friendly, natural, and helpful conversational partner.".toLowerCase();
-
-    const applyFlavor = (baseText: string): string => {
-      if (desc.includes("pirate")) {
-        return `Ahoy! ${baseText.replace(/\./g, "!")}`;
-      }
-      if (desc.includes("cyberpunk") || desc.includes("hacker") || desc.includes("sci-fi")) {
-        return `[SYSTEM LINK] ${baseText}`;
-      }
-      return baseText;
-    };
 
     // Math evaluation
     const mathResult = evaluateMathExpression(userText);
     if (mathResult) {
-      return applyFlavor(`Here is your calculation:\n${mathResult}`);
+      return `Here is the result:\n${mathResult}`;
     }
 
-    // Direct general knowledge answers & chitchat
+    // Direct general knowledge, help, and conversation answers
     const generalAnswer = answerGeneralQuestion(userText);
     if (generalAnswer) {
-      return applyFlavor(generalAnswer);
+      return generalAnswer;
     }
 
     // Code and Programming generation queries
@@ -377,53 +366,38 @@ const Index = () => {
       lower.includes("algorithm")
     ) {
       if (lower.includes("python") || lower.includes("sort") || lower.includes("array")) {
-        return applyFlavor(
+        return (
           `Here is a quicksort implementation in Python:\n\n` +
           `\`\`\`python\ndef quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)\n\n# Example usage:\nnumbers = [3, 6, 8, 10, 1, 2, 1]\nprint("Sorted:", quick_sort(numbers))\n\`\`\``
         );
       }
-      return applyFlavor(
+      return (
         `Here is a clean TypeScript function implementation:\n\n` +
-        `\`\`\`typescript\ninterface TaskConfig {\n  id: string;\n  retries: number;\n  timeoutMs: number;\n}\n\nasync function executeAutonomousTask(config: TaskConfig): Promise<boolean> {\n  console.log(\`Executing task: \${config.id}\`);\n  for (let attempt = 1; attempt <= config.retries; attempt++) {\n    try {\n      return true;\n    } catch (err) {\n      if (attempt === config.retries) throw err;\n    }\n  }\n  return false;\n}\n\`\`\``
+        `\`\`\`typescript\ninterface TaskConfig {\n  id: string;\n  retries: number;\n  timeoutMs: number;\n}\n\nasync function executeTask(config: TaskConfig): Promise<boolean> {\n  console.log(\`Executing task: \${config.id}\`);\n  for (let attempt = 1; attempt <= config.retries; attempt++) {\n    try {\n      return true;\n    } catch (err) {\n      if (attempt === config.retries) throw err;\n    }\n  }\n  return false;\n}\n\`\`\``
       );
     }
 
     if (category === "video_generation") {
-      return applyFlavor(`Generated your video for: "${userText}". Take a look below!`);
+      return `Here is your generated video based on: "${userText}".`;
     }
 
     if (category === "image_generation") {
-      return applyFlavor(`Here is the image created for: "${userText}".`);
+      return `Here is the image created based on: "${userText}".`;
     }
 
     if (category === "doc_analysis") {
-      return applyFlavor(`Finished reading "${selectedDoc?.name || "the file"}":\n1. Extracted key sections and notes.\n2. Summarized primary action points.\n3. Saved to session memory.`);
+      return `I have analyzed "${selectedDoc?.name || "the file"}". Key points:\n1. Extracted key sections and notes.\n2. Summarized main findings.`;
     }
 
     if (category === "image_analysis") {
-      return applyFlavor("Analyzed your image. Identified the main objects, layout, and visual details.");
+      return "I have analyzed your image and extracted the main visual details.";
     }
 
     if (category === "pizza") {
-      return applyFlavor("Domino's Pepperoni Pizza is available for $12.99 with coupon code '50OFF'. Estimated delivery in 20-30 minutes.");
+      return "Domino's Pepperoni Pizza is available for $12.99 with coupon code '50OFF'. Estimated delivery is 20-30 minutes.";
     }
 
-    if (category === "haircut") {
-      return applyFlavor("Found an open slot for a haircut with stylist Alex at Downtown Barbers tomorrow at 5:30 PM.");
-    }
-
-    if (category === "dubai") {
-      return applyFlavor("Here is a budget plan for 4 days in Dubai under $500:\n• Flight: $240 (FlyDubai)\n• Lodging: $135 (3 nights at hostel)\n• Food & Metro: $95");
-    }
-
-    if (category === "messages") {
-      return applyFlavor("Checked your messages:\n• 3 Slack messages\n• 2 Emails\nMost urgent: Sarah's update on Project Nuvio.");
-    }
-
-    // Natural default AI response
-    return applyFlavor(
-      `That's interesting! Tell me a bit more about what you have in mind.`
-    );
+    return "Could you tell me a bit more about what you would like to know?";
   };
 
   const simulateStreamingResponse = (
@@ -440,7 +414,7 @@ const Index = () => {
 
     let currentStepIndex = 0;
     const isGeneration = category === "image_generation" || category === "video_generation";
-    const stepDelay = isGeneration ? 25 : 200;
+    const stepDelay = isGeneration ? 25 : 150;
 
     const runNextStep = () => {
       if (currentStepIndex < stepsList.length) {
@@ -481,7 +455,6 @@ const Index = () => {
           updateActiveChatMessages((prev) => [...prev, newMessage]);
           setCurrentSteps([]);
           setCurrentProducts([]);
-          showSuccess("Generation complete.");
         } else {
           let streamedText = "";
           const words = finalText.split(" ");
@@ -532,7 +505,7 @@ const Index = () => {
     if ((lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) && !isLoggedIn) {
       setAuthMode("signin");
       setShowAuthModal(true);
-      showError("Video generation is exclusive to registered operators. Please sign in.");
+      showError("Video generation is exclusive to signed-in users. Please sign in.");
       return;
     }
 
@@ -567,7 +540,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Parsing numerical expression", status: "pending", log: "Calculating math expression..." },
+          { id: "1", title: "Calculating result", status: "pending", log: "Evaluating expression..." },
         ],
         "math"
       );
@@ -575,7 +548,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Formulating response", status: "pending", log: "Processing conversational response..." },
+          { id: "1", title: "Formulating response", status: "pending", log: "Processing answer..." },
         ],
         "general"
       );
@@ -584,8 +557,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Parsing visual vectors", status: "pending", log: "Preparing video diffusion..." },
-          { id: "2", title: "Rendering video frames", status: "pending", log: "Exporting MP4 video..." },
+          { id: "1", title: "Rendering video frames", status: "pending", log: "Exporting video..." },
         ],
         "video_generation",
         undefined,
@@ -594,12 +566,12 @@ const Index = () => {
       );
     } else if (lowerText.includes("generate") || lowerText.includes("draw") || lowerText.includes("create an image") || lowerText.includes("paint") || lowerText.includes("picture")) {
       const randomSeed = Math.floor(Math.random() * 9999);
-      const promptEncoded = encodeURIComponent(text.trim() || "futuristic cybernetic core");
+      const promptEncoded = encodeURIComponent(text.trim() || "beautiful landscape");
       const generatedImgUrl = `https://image.pollinations.ai/prompt/${promptEncoded}?width=1024&height=1024&nologo=true&seed=${randomSeed}`;
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Tokenizing prompt", status: "pending", log: "Rendering diffusion art..." },
+          { id: "1", title: "Rendering image", status: "pending", log: "Generating artwork..." },
         ],
         "image_generation",
         undefined,
@@ -625,7 +597,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Finding local options", status: "pending", log: "Comparing prices & delivery times..." },
+          { id: "1", title: "Finding local options", status: "pending", log: "Comparing prices..." },
         ],
         "pizza",
         [
@@ -659,7 +631,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Processing message", status: "pending", log: "Formulating response..." },
+          { id: "1", title: "Processing message", status: "pending", log: "Preparing answer..." },
         ],
         "default"
       );
@@ -699,8 +671,8 @@ const Index = () => {
     }
     setIsLoggedIn(true);
     setShowAuthModal(false);
-    setUsername(authEmail.split("@")[0] || "Agent Alpha");
-    showSuccess(authMode === "signin" ? "Welcome back to Nuvio Test OS!" : "Account created successfully!");
+    setUsername(authEmail.split("@")[0] || "User");
+    showSuccess(authMode === "signin" ? "Welcome back!" : "Account created successfully!");
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -711,9 +683,9 @@ const Index = () => {
     };
 
     const mockUsernames: Record<string, string> = {
-      Google: "Google Operator",
-      GitHub: "Octocat Dev",
-      Apple: "Apple Operator",
+      Google: "Google User",
+      GitHub: "GitHub User",
+      Apple: "Apple User",
     };
 
     const targetUrl = urls[provider];
@@ -721,7 +693,7 @@ const Index = () => {
       window.open(targetUrl, "_blank", "noopener,noreferrer");
       setIsLoggedIn(true);
       setShowAuthModal(false);
-      setUsername(mockUsernames[provider] || "Social Operator");
+      setUsername(mockUsernames[provider] || "User");
       showSuccess(`Authenticated via ${provider}.`);
     }
   };
@@ -737,7 +709,7 @@ const Index = () => {
             <NuvioLogo size="sm" />
             <div>
               <h1 className="text-lg font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Nuvio Test</h1>
-              <p className="text-[10px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">Autonomous OS v1.0</p>
+              <p className="text-[10px] text-zinc-400 dark:text-white/40 tracking-wider uppercase">Assistant v1.0</p>
             </div>
           </div>
 
@@ -856,7 +828,7 @@ const Index = () => {
               }`}
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Autonomous Chat</span>
+              <span>Chat</span>
             </button>
 
             <button
@@ -871,7 +843,7 @@ const Index = () => {
               }`}
             >
               <Mic className="w-3.5 h-3.5" />
-              <span>Voice Interface</span>
+              <span>Voice</span>
             </button>
 
             <button
@@ -886,7 +858,7 @@ const Index = () => {
               }`}
             >
               <Brain className="w-3.5 h-3.5" />
-              <span>Memory Core</span>
+              <span>Memory</span>
             </button>
 
             <button
@@ -901,7 +873,7 @@ const Index = () => {
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Automated Tasks</span>
+              <span>Tasks</span>
             </button>
 
             <button
@@ -916,7 +888,7 @@ const Index = () => {
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>System Settings</span>
+              <span>Settings</span>
             </button>
           </nav>
         </div>
@@ -927,15 +899,15 @@ const Index = () => {
               <User className="w-5 h-5 text-zinc-800 dark:text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-900 dark:text-white">{isLoggedIn ? username : "Guest Operator"}</p>
-              <p className="text-xs text-zinc-400 dark:text-white/40">{isLoggedIn ? "Premium Operator" : "Free Tier"}</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">{isLoggedIn ? username : "Guest User"}</p>
+              <p className="text-xs text-zinc-400 dark:text-white/40">{isLoggedIn ? "Member" : "Free Tier"}</p>
             </div>
           </div>
           {isLoggedIn ? (
             <button
               onClick={() => {
                 setIsLoggedIn(false);
-                showSuccess("Logged out of Nuvio Test OS.");
+                showSuccess("Logged out.");
               }}
               title="Sign Out"
               className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
@@ -1006,7 +978,7 @@ const Index = () => {
             </div>
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Nuvio Test Core: Online</span>
+              <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Online</span>
               <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80 font-mono ml-2">
                 {aiModel}
               </span>
@@ -1030,7 +1002,6 @@ const Index = () => {
               >
                 {isVoiceMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
-              <span className="text-xs font-mono text-zinc-400 dark:text-white/40">LATENCY: 8ms</span>
             </div>
           </div>
         </div>
@@ -1066,7 +1037,6 @@ const Index = () => {
                         />
                       )}
                       
-                      {/* Code Block rendering detection */}
                       {msg.text.includes("```") ? (
                         <div className="space-y-2">
                           {msg.text.split("```").map((part, index) => {
@@ -1128,7 +1098,7 @@ const Index = () => {
                       <div className="w-full max-w-[90%] md:max-w-[85%] mt-1">
                         <ProductComparer
                           products={msg.products}
-                          onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
+                          onSelect={(p) => showSuccess(`Selected ${p.name}.`)}
                         />
                       </div>
                     )}
@@ -1145,7 +1115,7 @@ const Index = () => {
                   <div className="w-full max-w-[90%] md:max-w-[85%]">
                     <ProductComparer
                       products={currentProducts}
-                      onSelect={(p) => showSuccess(`Selected ${p.name} for purchase.`)}
+                      onSelect={(p) => showSuccess(`Selected ${p.name}.`)}
                     />
                   </div>
                 )}
@@ -1160,7 +1130,7 @@ const Index = () => {
               <div className="text-center space-y-2">
                 <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase text-zinc-900 dark:text-white">Voice Interface</h2>
                 <p className="text-xs text-zinc-500 dark:text-white/60">
-                  {isListening ? "Nuvio Test is listening..." : "Tap the core to speak"}
+                  {isListening ? "Listening..." : "Tap the core to speak"}
                 </p>
               </div>
 
@@ -1189,9 +1159,9 @@ const Index = () => {
               {!isLoggedIn && (
                 <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10 rounded-2xl border border-zinc-200 dark:border-white/10">
                   <Lock className="w-8 h-8 text-amber-500 dark:text-amber-400 mb-3 animate-bounce" />
-                  <h3 className="text-lg font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Autonomous Memory Core</h3>
+                  <h3 className="text-lg font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Memory Core</h3>
                   <p className="text-xs text-zinc-500 dark:text-white/60 max-w-sm mt-1.5 mb-4">
-                    Nuvio Test's persistent memory core is exclusive to registered operators. Sign in to let Nuvio Test remember your preferences across sessions.
+                    Persistent memory core is available to signed-in users. Sign in to remember preferences across sessions.
                   </p>
                   <button
                     onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}
@@ -1215,14 +1185,14 @@ const Index = () => {
             <div className="max-w-2xl mx-auto space-y-8 text-zinc-900 dark:text-white pb-12">
               <div className="border-b border-zinc-200 dark:border-white/10 pb-3">
                 <h2 className="text-xl font-bold tracking-wider uppercase">System Settings</h2>
-                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your autonomous Nuvio Test OS environment</p>
+                <p className="text-xs text-zinc-500 dark:text-white/40">Configure your application settings</p>
               </div>
 
               {!isLoggedIn && (
                 <div className="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" /> Unlock Premium Features
+                      <Sparkles className="w-4 h-4" /> Sign In Required for Advanced Features
                     </h3>
                     <p className="text-xs text-zinc-600 dark:text-white/70">
                       Sign in to unlock Custom Personality, Persistent Memory, Video Generation, and Chat Exporting.
@@ -1249,7 +1219,7 @@ const Index = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <p className="text-xs font-semibold">Profile Username</p>
-                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your operator identity across Nuvio Test OS</p>
+                          <p className="text-[10px] text-zinc-400 dark:text-white/40">Your display identity</p>
                         </div>
                         {isEditingProfile ? (
                           <div className="flex items-center gap-2">
@@ -1308,9 +1278,9 @@ const Index = () => {
                       <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                         <button
                           onClick={() => {
-                            if (confirm("Are you absolutely sure you want to delete your Nuvio Test account? This action is irreversible.")) {
+                            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
                               setIsLoggedIn(false);
-                              showSuccess("Account deleted successfully.");
+                              showSuccess("Account deleted.");
                             }
                           }}
                           className="text-[10px] text-red-500 hover:text-red-400 flex items-center gap-1.5"
@@ -1318,7 +1288,7 @@ const Index = () => {
                           <Trash2 className="w-3.5 h-3.5" /> Delete Account
                         </button>
                         <button
-                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out of Nuvio Test OS."); }}
+                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out."); }}
                           className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
                         >
                           <LogOut className="w-3.5 h-3.5" /> Sign Out
@@ -1358,26 +1328,23 @@ const Index = () => {
                     {!isLoggedIn && (
                       <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex items-center justify-center p-4 text-center z-10 rounded-xl">
                         <Lock className="w-5 h-5 text-amber-500 dark:text-amber-400 mb-1.5" />
-                        <p className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Custom Personality Core</p>
-                        <p className="text-[10px] text-zinc-500 dark:text-white/60 max-w-xs mt-0.5">
-                          Sign in to customize Nuvio Test's behavior, tone, and response style.
-                        </p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Custom Personality Settings</p>
                       </div>
                     )}
-                    <p className="text-xs font-semibold">Custom Personality Core</p>
-                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Explain exactly how you want Nuvio Test to behave, speak, and respond.</p>
+                    <p className="text-xs font-semibold">Custom Personality Instructions</p>
+                    <p className="text-[10px] text-zinc-400 dark:text-white/40">Describe how you want the chatbot to behave, speak, and respond.</p>
                     <form onSubmit={handleSavePersonality} className="space-y-2">
                       <textarea
                         value={personalityInput}
                         onChange={(e) => setPersonalityInput(e.target.value)}
-                        placeholder="e.g., A sarcastic assistant who makes fun of my requests, or a helpful pirate who says 'Ahoy' and 'Arrr'."
+                        placeholder="e.g. A helpful assistant that provides clear, direct, and encouraging responses."
                         className="w-full h-20 bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-500 dark:focus:border-white resize-none"
                       />
                       <button
                         type="submit"
                         className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90 font-semibold py-1.5 rounded-lg text-xs transition-all"
                       >
-                        Save Personality Core
+                        Save Settings
                       </button>
                     </form>
                   </div>
@@ -1385,7 +1352,7 @@ const Index = () => {
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
                       <p className="text-xs font-semibold">AI Model</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select the active reasoning engine</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select reasoning model</p>
                     </div>
                     <select
                       value={aiModel}
@@ -1395,125 +1362,10 @@ const Index = () => {
                       }}
                       className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
                     >
-                      <option value="Nuvio GPT-4o Core">Nuvio GPT-4o Core</option>
-                      <option value="Claude 3.5 Sonnet Agent">Claude 3.5 Sonnet Agent</option>
-                      <option value="DeepSeek R1 Thinker">DeepSeek R1 Thinker</option>
-                      <option value="Gemini 1.5 Pro Ultra">Gemini 1.5 Pro Ultra</option>
-                      <option value="Llama 3.1 405B Core">Llama 3.1 405B Core</option>
+                      <option value="Nuvio GPT-4o Core">GPT-4o</option>
+                      <option value="Claude 3.5 Sonnet Agent">Claude 3.5 Sonnet</option>
+                      <option value="DeepSeek R1 Thinker">DeepSeek R1</option>
                     </select>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Response Length</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Preferred verbosity of AI replies</p>
-                    </div>
-                    <div className="flex bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 rounded-lg p-0.5">
-                      {(["short", "balanced", "detailed"] as const).map((len) => (
-                        <button
-                          key={len}
-                          onClick={() => {
-                            setResponseLength(len);
-                            showSuccess(`Response length set to ${len}`);
-                          }}
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                            responseLength === len ? "bg-zinc-900 text-white dark:bg-white dark:text-black" : "text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white"
-                          }`}
-                        >
-                          {len}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-semibold">Creativity (Temperature)</p>
-                        <p className="text-[10px] text-zinc-400 dark:text-white/40">Precise vs. highly creative responses</p>
-                      </div>
-                      <span className="text-xs font-mono text-zinc-600 dark:text-white/60">{creativity}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={creativity}
-                      onChange={(e) => setCreativity(Number(e.target.value))}
-                      className="w-full accent-zinc-900 dark:accent-white bg-zinc-200 dark:bg-white/10 h-1 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Web Search Agent</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio Test to browse the live web for real-time data</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsWebSearchEnabled(!isWebSearchEnabled);
-                        showSuccess(isWebSearchEnabled ? "Web search disabled." : "Web search enabled.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isWebSearchEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isWebSearchEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Save Chat History</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Store conversation logs locally on this device</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsSaveHistoryEnabled(!isSaveHistoryEnabled);
-                        showSuccess(isSaveHistoryEnabled ? "Chat history saving paused." : "Chat history saving active.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isSaveHistoryEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isSaveHistoryEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3 relative">
-                    {!isLoggedIn && (
-                      <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
-                        <Lock className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Memory Core (Premium)</span>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-semibold">Autonomous Memory Core</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Allow Nuvio Test to remember facts across sessions</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsMemoryEnabled(!isMemoryEnabled);
-                        showSuccess(isMemoryEnabled ? "Memory core deactivated." : "Memory core activated.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isMemoryEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isMemoryEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1528,7 +1380,7 @@ const Index = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold">Theme Mode</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select your visual environment</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select visual mode</p>
                     </div>
                     <div className="flex bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 rounded-lg p-0.5">
                       {(["dark", "light", "system"] as const).map((mode) => (
@@ -1546,342 +1398,6 @@ const Index = () => {
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Accent Color</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Customize the primary highlight color</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={accentColor}
-                        onChange={(e) => {
-                          setAccentColor(e.target.value);
-                          showSuccess("Accent color updated.");
-                        }}
-                        className="w-8 h-8 rounded-lg border border-zinc-300 dark:border-white/20 bg-transparent cursor-pointer"
-                      />
-                      <span className="text-xs font-mono text-zinc-600 dark:text-white/60 uppercase">{accentColor}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Font Size</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Adjust text readability</p>
-                    </div>
-                    <div className="flex bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 rounded-lg p-0.5">
-                      {(["sm", "md", "lg"] as const).map((sz) => (
-                        <button
-                          key={sz}
-                          onClick={() => {
-                            setFontSize(sz);
-                            showSuccess(`Font size set to ${sz.toUpperCase()}`);
-                          }}
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                            fontSize === sz ? "bg-zinc-900 text-white dark:bg-white dark:text-black" : "text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white"
-                          }`}
-                        >
-                          {sz}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
-                <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
-                  <Bell className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">🔔 Notifications</h3>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold">Enable Notifications</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Receive alerts when background tasks complete</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsNotificationsEnabled(!isNotificationsEnabled);
-                        showSuccess(isNotificationsEnabled ? "Notifications disabled." : "Notifications enabled.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isNotificationsEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isNotificationsEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Sound Effects</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Play audio cues for system events</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsSoundEnabled(!isSoundEnabled);
-                        showSuccess(isSoundEnabled ? "Sound effects muted." : "Sound effects active.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isSoundEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isSoundEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
-                <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
-                  <Lock className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">🔒 Privacy & Security</h3>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold">Clear All Chats</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Permanently delete all conversation history</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (confirm("Are you sure you want to clear all chat history? This cannot be undone.")) {
-                          setChats([chats[0]]);
-                          showSuccess("All chats cleared successfully.");
-                        }
-                      }}
-                      className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-2.5 py-1 rounded-lg transition-all"
-                    >
-                      Clear Chats
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3 relative">
-                    {!isLoggedIn && (
-                      <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-[1px] flex items-center justify-center gap-2 z-10 rounded-lg">
-                        <Lock className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white">Export Chats (Premium)</span>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-semibold">Export Chats</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Download your chat history as a JSON file</p>
-                    </div>
-                    <button
-                      onClick={handleExportChat}
-                      className="text-[10px] bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1"
-                    >
-                      <Download className="w-3 h-3" /> Export
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Anonymous Data Collection</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Share telemetry to help improve Nuvio Test OS</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsDataCollectionEnabled(!isDataCollectionEnabled);
-                        showSuccess(isDataCollectionEnabled ? "Telemetry sharing disabled." : "Telemetry sharing enabled.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isDataCollectionEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isDataCollectionEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Two-Factor Authentication (2FA)</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Add an extra layer of security to your account</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsTwoFactorEnabled(!isTwoFactorEnabled);
-                        showSuccess(isTwoFactorEnabled ? "2FA deactivated." : "2FA activated successfully.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isTwoFactorEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isTwoFactorEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
-                <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
-                  <Globe className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">🌍 Language</h3>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold">App Language</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select the interface language</p>
-                    </div>
-                    <select
-                      value={appLanguage}
-                      onChange={(e) => {
-                        setAppLanguage(e.target.value);
-                        showSuccess(`App language set to ${e.target.value}`);
-                      }}
-                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                    >
-                      <option value="English (US)">English (US)</option>
-                      <option value="Spanish (ES)">Spanish (ES)</option>
-                      <option value="French (FR)">French (FR)</option>
-                      <option value="German (DE)">German (DE)</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">AI Response Language</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Force AI to reply in a specific language</p>
-                    </div>
-                    <select
-                      value={aiLanguage}
-                      onChange={(e) => {
-                        setAiLanguage(e.target.value);
-                        showSuccess(`AI response language set to ${e.target.value}`);
-                      }}
-                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                    >
-                      <option value="Auto-detect">Auto-detect</option>
-                      <option value="English">English</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
-                <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
-                  <Star className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">⭐ Nice Extras</h3>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold">Haptic Feedback</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Vibrate device on button taps and actions</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setIsHapticEnabled(!isHapticEnabled);
-                        showSuccess(isHapticEnabled ? "Haptic feedback disabled." : "Haptic feedback enabled.");
-                      }}
-                      className={`w-10 h-5 rounded-full transition-all relative ${
-                        isHapticEnabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full absolute top-0.5 transition-all ${
-                          isHapticEnabled ? "bg-white dark:bg-black right-0.5" : "bg-zinc-400 dark:bg-white/60 left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Voice Selection (TTS)</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Choose the voice for text-to-speech reading</p>
-                    </div>
-                    <select
-                      value={voiceSelection}
-                      onChange={(e) => {
-                        setVoiceSelection(e.target.value);
-                        showSuccess(`Voice set to ${e.target.value}`);
-                      }}
-                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                    >
-                      <option value="Male Neural (US)">Male Neural (US)</option>
-                      <option value="Female Neural (US)">Female Neural (US)</option>
-                      <option value="British Accent Neural">British Accent Neural</option>
-                      <option value="Cybernetic Synth Voice">Cybernetic Synth Voice</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
-                    <div>
-                      <p className="text-xs font-semibold">Default Opening Page</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Choose what you see when launching the app</p>
-                    </div>
-                    <select
-                      value={defaultOpeningPage}
-                      onChange={(e) => {
-                        setDefaultOpeningPage(e.target.value as any);
-                        showSuccess(`Default page set to ${e.target.value === "new-chat" ? "New Chat" : "Recent Chats"}`);
-                      }}
-                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                    >
-                      <option value="new-chat">New Chat</option>
-                      <option value="recent-chats">Recent Chats</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
-                <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
-                  <Info className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">ℹ️ About</h3>
-                </div>
-
-                <div className="space-y-3 pt-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500 dark:text-white/60">Version</span>
-                    <span className="font-mono text-zinc-700 dark:text-white/80">v1.0.4-beta</span>
-                  </div>
-                  <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
-                    <span className="text-zinc-500 dark:text-white/60">Privacy Policy</span>
-                    <a href="#" onClick={(e) => { e.preventDefault(); showSuccess("Privacy Policy loaded."); }} className="text-zinc-700 dark:text-white hover:underline">Read Policy</a>
-                  </div>
-                  <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
-                    <span className="text-zinc-500 dark:text-white/60">Terms of Service</span>
-                    <a href="#" onClick={(e) => { e.preventDefault(); showSuccess("Terms of Service loaded."); }} className="text-zinc-700 dark:text-white hover:underline">Read Terms</a>
-                  </div>
-                  <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
-                    <span className="text-zinc-500 dark:text-white/60">Contact Support</span>
-                    <a href="mailto:support@nuvio.ai" className="text-zinc-700 dark:text-white hover:underline">support@nuvio.ai</a>
-                  </div>
-                  <div className="flex justify-between border-t border-zinc-100 dark:border-white/5 pt-2">
-                    <span className="text-zinc-500 dark:text-white/60">Rate the App</span>
-                    <button onClick={() => showSuccess("Thank you for rating Nuvio Test OS 5 stars!")} className="text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 flex items-center gap-1">
-                      ★★★★★
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1947,7 +1463,7 @@ const Index = () => {
                 </button>
                 <input
                   type="text"
-                  placeholder="Ask a question, ask for step-by-step help, or just chat..."
+                  placeholder="Ask a question, ask for help, or send a message..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputText)}
@@ -2042,11 +1558,8 @@ const Index = () => {
             <div className="text-center space-y-1">
               <NuvioLogo size="sm" />
               <h3 className="text-base font-bold uppercase tracking-wider mt-2 text-zinc-900 dark:text-white">
-                {authMode === "signin" ? "Sign In to Nuvio Test OS" : "Create Free Account"}
+                {authMode === "signin" ? "Sign In" : "Create Account"}
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-white/40">
-                Unlock persistent memory, custom personalities, and video generation.
-              </p>
             </div>
 
             <form onSubmit={handleAuthSubmit} className="space-y-3">
@@ -2055,7 +1568,7 @@ const Index = () => {
                 <input
                   type="email"
                   required
-                  placeholder="operator@nuvio.ai"
+                  placeholder="user@example.com"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
                   className="w-full bg-white dark:bg-black border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-white/30"
