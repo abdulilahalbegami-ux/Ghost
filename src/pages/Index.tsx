@@ -33,7 +33,6 @@ import {
   Menu,
   Loader2,
   Code2,
-  ChevronDown,
 } from "lucide-react";
 import NuvioLogo from "@/components/NuvioLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -976,25 +975,6 @@ const Index = () => {
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Online</span>
-              
-              {/* Quick Model Selector Dropdown in Top Bar */}
-              <div className="relative ml-2">
-                <select
-                  value={aiModel}
-                  onChange={(e) => {
-                    setAiModel(e.target.value);
-                    showSuccess(`Switched model to ${e.target.value}`);
-                  }}
-                  className="bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-white/90 text-[10px] font-mono px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/10 focus:outline-none cursor-pointer hover:bg-zinc-200 dark:hover:bg-white/20 transition-all pr-6 appearance-none"
-                >
-                  {AVAILABLE_MODELS.map((m) => (
-                    <option key={m.id} value={m.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
-                      {m.provider}: {m.name} ({m.badge})
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-3 h-3 text-zinc-400 pointer-events-none absolute right-2 top-1.5" />
-              </div>
             </div>
           </div>
 
