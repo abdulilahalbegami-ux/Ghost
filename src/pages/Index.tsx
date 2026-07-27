@@ -326,7 +326,7 @@ const Index = () => {
       return `Here is the result:\n${mathResult}`;
     }
 
-    // Direct general knowledge, help, and conversation answers
+    // Direct general knowledge, help, creative writing, and conversation answers
     const generalAnswer = answerGeneralQuestion(userText);
     if (generalAnswer) {
       return generalAnswer;
@@ -377,7 +377,7 @@ const Index = () => {
       return "Domino's Pepperoni Pizza is available for $12.99 with coupon code '50OFF'. Estimated delivery is 20-30 minutes.";
     }
 
-    return `That's an interesting point about "${userText.trim()}". Could you share a bit more context so I can give you the best answer?`;
+    return `I understand you're asking about "${userText.trim()}". Could you share a bit more context so I can give you the most helpful answer?`;
   };
 
   const simulateStreamingResponse = (
