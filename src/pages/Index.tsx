@@ -33,6 +33,7 @@ import {
   Menu,
   Loader2,
   Code2,
+  ChevronDown,
 } from "lucide-react";
 import NuvioLogo from "@/components/NuvioLogo";
 import VoiceVisualizer from "@/components/VoiceVisualizer";
@@ -70,6 +71,21 @@ interface Chat {
   timestamp: Date;
   messages: Message[];
 }
+
+const AVAILABLE_MODELS = [
+  { id: "Nuvio GPT-4o Core", name: "GPT-4o Core", badge: "Flagship", provider: "OpenAI" },
+  { id: "OpenAI o3-mini (Reasoning)", name: "o3-mini", badge: "Reasoning", provider: "OpenAI" },
+  { id: "GPT-4o Mini", name: "GPT-4o Mini", badge: "Fast", provider: "OpenAI" },
+  { id: "Claude 3.5 Sonnet Agent", name: "Claude 3.5 Sonnet", badge: "Coding", provider: "Anthropic" },
+  { id: "Claude 3.5 Haiku", name: "Claude 3.5 Haiku", badge: "Speed", provider: "Anthropic" },
+  { id: "DeepSeek R1 Thinker", name: "DeepSeek R1", badge: "Deep Reasoning", provider: "DeepSeek" },
+  { id: "DeepSeek V3 Fast", name: "DeepSeek V3", badge: "General", provider: "DeepSeek" },
+  { id: "Gemini 2.0 Flash", name: "Gemini 2.0 Flash", badge: "Multimodal", provider: "Google" },
+  { id: "Gemini 1.5 Pro", name: "Gemini 1.5 Pro", badge: "1M Context", provider: "Google" },
+  { id: "Llama 3.3 70B Turbo", name: "Llama 3.3 70B", badge: "Open Source", provider: "Meta" },
+  { id: "Mistral Large 2", name: "Mistral Large 2", badge: "Technical", provider: "Mistral" },
+  { id: "Qwen 2.5 Max", name: "Qwen 2.5 Max", badge: "Precision", provider: "Alibaba" },
+];
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "voice" | "memory" | "tasks" | "settings">("chat");
@@ -960,9 +976,25 @@ const Index = () => {
             <div className="hidden md:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono tracking-wider text-zinc-500 dark:text-white/60 uppercase">Online</span>
-              <span className="text-[10px] bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded text-zinc-600 dark:text-white/80 font-mono ml-2">
-                {aiModel}
-              </span>
+              
+              {/* Quick Model Selector Dropdown in Top Bar */}
+              <div className="relative ml-2">
+                <select
+                  value={aiModel}
+                  onChange={(e) => {
+                    setAiModel(e.target.value);
+                    showSuccess(`Switched model to ${e.target.value}`);
+                  }}
+                  className="bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-white/90 text-[10px] font-mono px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/10 focus:outline-none cursor-pointer hover:bg-zinc-200 dark:hover:bg-white/20 transition-all pr-6 appearance-none"
+                >
+                  {AVAILABLE_MODELS.map((m) => (
+                    <option key={m.id} value={m.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
+                      {m.provider}: {m.name} ({m.badge})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3 h-3 text-zinc-400 pointer-events-none absolute right-2 top-1.5" />
+              </div>
             </div>
           </div>
 
@@ -1356,8 +1388,8 @@ const Index = () => {
 
                   <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
                     <div>
-                      <p className="text-xs font-semibold">AI Model</p>
-                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select reasoning model</p>
+                      <p className="text-xs font-semibold">Active AI Model</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-white/40">Select intelligence engine</p>
                     </div>
                     <select
                       value={aiModel}
@@ -1365,11 +1397,13 @@ const Index = () => {
                         setAiModel(e.target.value);
                         showSuccess(`Switched to ${e.target.value}`);
                       }}
-                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                      className="bg-white dark:bg-black border border-zinc-300 dark:border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none max-w-[180px] sm:max-w-xs"
                     >
-                      <option value="Nuvio GPT-4o Core">GPT-4o</option>
-                      <option value="Claude 3.5 Sonnet Agent">Claude 3.5 Sonnet</option>
-                      <option value="DeepSeek R1 Thinker">DeepSeek R1</option>
+                      {AVAILABLE_MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.provider}: {m.name} ({m.badge})
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
