@@ -1223,7 +1223,7 @@ const Index = () => {
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <User className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">👤 Account</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">Account</h3>
                 </div>
                 
                 <div className="space-y-4 pt-2">
@@ -1357,7 +1357,7 @@ const Index = () => {
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Cpu className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">🤖 AI Engine</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">AI Engine</h3>
                 </div>
 
                 <div className="space-y-4 pt-2">
@@ -1412,7 +1412,7 @@ const Index = () => {
               <div className="space-y-3 bg-white dark:bg-white/5 p-5 rounded-2xl border border-zinc-200 dark:border-white/10">
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-2.5">
                   <Palette className="w-4 h-4 text-zinc-500 dark:text-white/60" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">🎨 Appearance</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-white/80">Appearance</h3>
                 </div>
 
                 <div className="space-y-4 pt-2">
