@@ -83,6 +83,9 @@ const Index = () => {
   const [authPassword, setAuthPassword] = useState("");
   const [socialLoadingProvider, setSocialLoadingProvider] = useState<string | null>(null);
 
+  // Sign out confirmation state in Settings
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState<boolean>(false);
+
   // Custom personality state defined by the user
   const [customPersonality, setCustomPersonality] = useState<string>(
     "A friendly, natural, and helpful chatbot."
@@ -892,18 +895,7 @@ const Index = () => {
               <p className="text-xs text-zinc-400 dark:text-white/40">{isLoggedIn ? "Member" : "Free Tier"}</p>
             </div>
           </div>
-          {isLoggedIn ? (
-            <button
-              onClick={() => {
-                setIsLoggedIn(false);
-                showSuccess("Logged out.");
-              }}
-              title="Sign Out"
-              className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white p-2 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          ) : (
+          {!isLoggedIn && (
             <button
               onClick={() => {
                 setAuthMode("signin");
@@ -1264,7 +1256,7 @@ const Index = () => {
                         </button>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-zinc-100 dark:border-white/5 pt-3">
                         <button
                           onClick={() => {
                             if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
@@ -1276,12 +1268,36 @@ const Index = () => {
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Delete Account
                         </button>
-                        <button
-                          onClick={() => { setIsLoggedIn(false); showSuccess("Signed out."); }}
-                          className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-3 py-1 rounded-lg transition-all flex items-center gap-1.5"
-                        >
-                          <LogOut className="w-3.5 h-3.5" /> Sign Out
-                        </button>
+
+                        {/* Red Sign Out Option with Are You Sure Confirmation */}
+                        {!showSignOutConfirm ? (
+                          <button
+                            onClick={() => setShowSignOutConfirm(true)}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition-all flex items-center gap-1.5 self-end sm:self-auto"
+                          >
+                            <LogOut className="w-3.5 h-3.5" /> Sign Out
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 p-2 rounded-xl text-xs">
+                            <span className="font-semibold text-red-500 dark:text-red-400 text-[11px]">Are you sure?</span>
+                            <button
+                              onClick={() => {
+                                setIsLoggedIn(false);
+                                setShowSignOutConfirm(false);
+                                showSuccess("Signed out.");
+                              }}
+                              className="bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded text-[10px] transition-all"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => setShowSignOutConfirm(false)}
+                              className="bg-zinc-200 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-800 dark:text-white font-bold px-2.5 py-1 rounded text-[10px] transition-all"
+                            >
+                              No
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (
