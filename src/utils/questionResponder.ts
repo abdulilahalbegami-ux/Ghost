@@ -1,210 +1,188 @@
 /**
- * Natural Conversational & Knowledge Engine
- * 
- * Rules:
- * - Answer user's latest message directly and stay on topic.
- * - Answer factual questions clearly and accurately without inventing facts.
- * - Provide simple step-by-step guidance when asked for help.
- * - Handle creative writing naturally.
- * - Ask short clarifying questions when input is unclear.
- * - Do not randomly mention identity/app name unless explicitly asked.
- * - Keep replies natural, friendly, and easy to understand.
+ * Natural Conversational & Knowledge Engine for Nuvio
+ *
+ * Provides direct, natural, human-like AI responses across general knowledge,
+ * step-by-step guidance, creative writing, programming, and everyday conversation.
  */
 
-// Levenshtein distance algorithm for string similarity
-function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-
-  const matrix: number[][] = [];
-
-  for (let i = 0; i <= a.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= b.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-
-  return matrix[a.length][b.length];
+function cleanQuery(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s]/gi, "")
+    .replace(/\s+/g, " ");
 }
 
-function stringSimilarity(str1: string, str2: string): number {
-  if (str1 === str2) return 1.0;
-  const distance = levenshteinDistance(str1, str2);
-  const maxLength = Math.max(str1.length, str2.length);
-  if (maxLength === 0) return 1.0;
-  return (maxLength - distance) / maxLength;
+interface KnowledgeEntry {
+  tags: string[];
+  answer: string;
 }
 
-function normalizeKey(str: string): string {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
+const KNOWLEDGE_BASE: KnowledgeEntry[] = [
+  // Superheroes & Pop Culture
+  {
+    tags: ["spiderman", "peter parker", "spider man", "spidey"],
+    answer: "Spider-Man (Peter Parker) is a beloved Marvel superhero created by Stan Lee and Steve Ditko. After being bitten by a radioactive spider, Peter gained wall-crawling abilities, super strength, agility, and a 'spider-sense'. Guided by his uncle's lesson that 'with great power comes great responsibility,' he protects New York City while balancing normal life.",
+  },
+  {
+    tags: ["iron man", "tony stark", "ironman"],
+    answer: "Iron Man (Tony Stark) is a Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. A genius billionaire inventor, Tony built a powered suit of armor to escape captivity, which he later refined to protect the world as an Avenger.",
+  },
+  {
+    tags: ["batman", "bruce wayne", "dark knight"],
+    answer: "Batman (Bruce Wayne) is a DC Comics superhero created by Bob Kane and Bill Finger. Lacking superhuman powers, Bruce relies on martial arts mastery, detective skills, advanced technology, and immense wealth to fight crime in Gotham City.",
+  },
+  {
+    tags: ["superman", "clark kent", "kal el"],
+    answer: "Superman (Clark Kent) is a DC Comics superhero from the destroyed planet Krypton. Raised in Kansas, Earth's yellow sun grants him flight, invulnerability, super strength, heat vision, and x-ray vision, which he uses to defend humanity.",
+  },
 
-// Knowledge Base
-const KNOWLEDGE_BASE: Array<{ keys: string[]; synonyms: string[]; answer: string }> = [
+  // Historical Figures & Scientists
   {
-    keys: ["spiderman", "peterparker"],
-    synonyms: ["spider man", "spider-man", "spidrman", "peter parker", "spidey"],
-    answer: "Spider-Man (Peter Parker) is a Marvel superhero created by Stan Lee and Steve Ditko. Bitten by a radioactive spider, Peter gained wall-crawling ability, superhuman agility, and a 'spider-sense'. Guided by the principle 'With great power comes great responsibility,' he protects New York City.",
+    tags: ["albert einstein", "einstein", "relativity"],
+    answer: "Albert Einstein (1879–1955) was a theoretical physicist widely regarded as one of the greatest scientists in history. He developed the theory of relativity (including E = mc²), which revolutionized our understanding of space, time, gravity, and energy. He won the Nobel Prize in Physics in 1921 for his discovery of the photoelectric effect.",
   },
   {
-    keys: ["ironman", "tonystark"],
-    synonyms: ["iron man", "iron-man", "tony stark", "tony strak"],
-    answer: "Iron Man (Tony Stark) is a Marvel superhero created by Stan Lee, Larry Lieber, Don Heck, and Jack Kirby. A genius billionaire inventor, Tony builds high-tech powered armor equipped with flight systems, repulsors, and advanced AI.",
+    tags: ["isaac newton", "sir isaac newton", "gravity"],
+    answer: "Sir Isaac Newton (1643–1727) was an English mathematician and physicist who formulated the three laws of motion, established the law of universal gravitation, and co-developed calculus. His work laid the foundation for classical mechanics.",
   },
   {
-    keys: ["batman", "brucewayne"],
-    synonyms: ["dark knight", "bat man", "bruce wayne"],
-    answer: "Batman (Bruce Wayne) is a DC Comics superhero created by Bob Kane and Bill Finger. After losing his parents, Bruce trained rigorously to master martial arts, detective skills, and high-tech weaponry to protect Gotham City.",
+    tags: ["nikola tesla", "tesla"],
+    answer: "Nikola Tesla (1856–1943) was a Serbian-American inventor and electrical engineer best known for designing the alternating current (AC) electricity system, which powers modern electrical grids worldwide.",
   },
   {
-    keys: ["superman", "clarkkent"],
-    synonyms: ["super man", "clark kent", "kal el"],
-    answer: "Superman (Clark Kent / Kal-El) is a DC Comics superhero created by Jerry Siegel and Joe Shuster. Born on Krypton and raised in Kansas, Earth's yellow sun grants him flight, invulnerability, super strength, and heat vision.",
+    tags: ["marie curie", "curie"],
+    answer: "Marie Curie (1867–1934) was a pioneering physicist and chemist who conducted groundbreaking research on radioactivity. She was the first woman to win a Nobel Prize, the first person to win Nobel Prizes in two different scientific fields (Physics and Chemistry), and discovered the elements polonium and radium.",
+  },
+
+  // Science & Astronomy
+  {
+    tags: ["black hole", "black holes"],
+    answer: "A black hole is a region of spacetime where gravity is so intense that nothing—not even light—can escape its event horizon. They are formed when massive stars collapse at the end of their life cycle or during cosmic mergers.",
   },
   {
-    keys: ["alberteinstein", "einstein"],
-    synonyms: ["albert einstein", "einstein relativity"],
-    answer: "Albert Einstein (1879–1955) was a theoretical physicist best known for developing the theory of relativity (E = mc²) and winning the 1921 Nobel Prize in Physics for his discovery of the photoelectric effect.",
+    tags: ["photosynthesis", "how plants make food"],
+    answer: "Photosynthesis is the process by which green plants, algae, and some bacteria convert light energy (usually from the sun) along with carbon dioxide and water into glucose (sugar) and oxygen. It is vital for oxygen production on Earth.",
   },
   {
-    keys: ["isaacnewton", "newton"],
-    synonyms: ["sir isaac newton", "newton gravity"],
-    answer: "Sir Isaac Newton (1643–1727) was an English mathematician and physicist who formulated the three laws of motion, the law of universal gravitation, and co-developed calculus.",
+    tags: ["quantum computing", "quantum computer"],
+    answer: "Quantum computing is an advanced technology that uses quantum mechanical phenomena—like superposition and entanglement—to perform calculations exponentially faster than classical supercomputers for complex problems in chemistry, cryptography, and optimization.",
   },
   {
-    keys: ["capitaloffrance", "paris"],
-    synonyms: ["paris france", "capital france"],
-    answer: "The capital of France is Paris, famous for its rich history, culture, art, and world-renowned landmarks like the Eiffel Tower and the Louvre Museum.",
+    tags: ["solar system", "planets"],
+    answer: "Our solar system consists of the Sun and everything bound to it by gravity: eight official planets (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune), dwarf planets like Pluto, dozens of moons, and millions of asteroids and comets.",
+  },
+
+  // Geography & Countries
+  {
+    tags: ["capital of france", "paris"],
+    answer: "The capital of France is Paris, famous for its world-renowned landmarks like the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral, as well as its rich culture, fashion, and cuisine.",
   },
   {
-    keys: ["capitalofjapan", "tokyo"],
-    synonyms: ["tokyo japan", "capital japan"],
-    answer: "The capital of Japan is Tokyo, a global metropolis blending ultra-modern technology, historic shrines, and rich culinary traditions.",
+    tags: ["capital of japan", "tokyo"],
+    answer: "The capital of Japan is Tokyo, a vibrant metropolis blending futuristic technology, traditional shrines, bustling commerce, and a world-class culinary scene.",
   },
   {
-    keys: ["whoareyou", "whatisnuvio", "nuvio"],
-    synonyms: ["nuvio test", "nuviotest", "who created you"],
-    answer: "I am Nuvio Test, a helpful AI assistant built to answer questions, guide you step by step, and assist with tasks.",
+    tags: ["capital of USA", "capital of united states", "washington dc"],
+    answer: "The capital of the United States is Washington, D.C., home to key federal government landmarks including the White House, the U.S. Capitol, and the Supreme Court.",
+  },
+  {
+    tags: ["capital of UK", "capital of england", "london"],
+    answer: "The capital of the United Kingdom is London, a historic global city famous for Big Ben, the Tower of London, Buckingham Palace, and its rich arts and financial sectors.",
+  },
+
+  // Tech & AI
+  {
+    tags: ["artificial intelligence", "what is ai"],
+    answer: "Artificial Intelligence (AI) refers to the simulation of human intelligence by computer systems. It encompasses subfields like machine learning, deep learning, computer vision, and natural language processing, enabling machines to learn, reason, solve problems, and understand human language.",
+  },
+  {
+    tags: ["blockchain", "what is blockchain"],
+    answer: "A blockchain is a decentralized, distributed digital ledger that records transactions across many computers securely. Once recorded, the data cannot be altered retroactively without altering subsequent blocks, making it fundamental to cryptocurrencies and smart contracts.",
+  },
+  {
+    tags: ["cloud computing", "what is cloud computing"],
+    answer: "Cloud computing is the on-demand delivery of computing services—including servers, storage, databases, networking, software, and analytics—over the internet ('the cloud') rather than relying on local hard drives or physical servers.",
   }
 ];
 
-function cleanQuery(text: string): string {
-  let cleaned = text.toLowerCase().trim();
-  cleaned = cleaned
-    .replace(/\b(wht|wat|whas|whats|what's|whos|who's|whois)\b/g, (m) => m.includes("who") ? "who is" : "what is")
-    .replace(/\b(tel me|telme|tellme)\b/g, "tell me")
-    .replace(/\b(plz|pls|plse)\b/g, "please")
-    .replace(/\b(abou|abt)\b/g, "about");
-
-  return cleaned;
-}
-
-function fuzzyMatch(userInput: string, target: string): boolean {
-  const normUser = normalizeKey(userInput);
-  const normTarget = normalizeKey(target);
-
-  if (!normUser || !normTarget) return false;
-  if (normUser.includes(normTarget) || normTarget.includes(normUser)) return true;
-
-  const userWords = userInput.toLowerCase().split(/\s+/);
-  const targetWords = target.toLowerCase().split(/\s+/);
-
-  for (const uWord of userWords) {
-    if (uWord.length < 3) continue;
-    for (const tWord of targetWords) {
-      if (tWord.length < 3) continue;
-      if (stringSimilarity(uWord, tWord) >= 0.75) return true;
-    }
+function handleHowToQuery(lowerText: string): string {
+  if (lowerText.includes("cook") || lowerText.includes("pasta") || lowerText.includes("recipe") || lowerText.includes("rice")) {
+    return (
+      `Here is a simple, foolproof guide:\n\n` +
+      `1. **Gather ingredients**: Prep your fresh ingredients, seasoning, and oil/butter before heating your pan.\n` +
+      `2. **Boil or Sear**: Heat your pan or bring salted water to a rolling boil.\n` +
+      `3. **Cook evenly**: Stir periodically and maintain a steady medium heat so food cooks thoroughly without burning.\n` +
+      `4. **Season & Rest**: Taste toward the end, add salt/pepper as needed, and let hot dishes rest 2-3 minutes before serving.`
+    );
   }
 
-  return stringSimilarity(normUser, normTarget) >= 0.70;
-}
+  if (lowerText.includes("code") || lowerText.includes("program") || lowerText.includes("learn react") || lowerText.includes("web development")) {
+    return (
+      `Here is a structured path to get started:\n\n` +
+      `1. **Master the Basics**: Learn fundamental JavaScript (variables, functions, arrays, and async/await).\n` +
+      `2. **Understand Components**: Learn how React manages state (` + "`useState`" + `) and side-effects (` + "`useEffect`" + `).\n` +
+      `3. **Build Small Projects**: Create practical projects like a To-Do list, Weather App, or Quiz app.\n` +
+      `4. **Learn Modern Tools**: Explore Tailwind CSS for styling and Vite or Next.js for building scalable applications.`
+    );
+  }
 
-function isHelpRequest(lowerText: string): boolean {
-  return (
-    lowerText.includes("help me") ||
-    lowerText.includes("how do i") ||
-    lowerText.includes("how can i") ||
-    lowerText.includes("guide me") ||
-    lowerText.includes("steps to") ||
-    lowerText.includes("show me how") ||
-    lowerText.includes("teach me") ||
-    lowerText.startsWith("how to")
-  );
-}
+  if (lowerText.includes("focus") || lowerText.includes("study") || lowerText.includes("productive")) {
+    return (
+      `Here are effective techniques to boost focus:\n\n` +
+      `1. **Use the Pomodoro Technique**: Work uninterrupted for 25 minutes, then take a 5-minute break.\n` +
+      `2. **Eliminate Distractions**: Put your phone on silent and keep only necessary browser tabs open.\n` +
+      `3. **Define Clear Tasks**: Break large assignments into 2-3 small actionable items for the session.\n` +
+      `4. **Stay Hydrated**: Keep water nearby and take quick physical stretches between focus sprints.`
+    );
+  }
 
-function generateStepByStepHelp(rawText: string): string {
-  const topic = rawText
-    .replace(/^(help me|can you help me|how do i|how can i|guide me through|show me how to|how to)\s+/i, "")
+  const topic = lowerText
+    .replace(/^(how to|how do i|how can i|help me|guide me through|steps for)\s+/i, "")
     .replace(/\?/g, "")
     .trim();
 
-  const title = topic ? topic : "that task";
-
   return (
-    `Here is a simple, step-by-step guide to help you with ${title}:\n\n` +
-    `1. **Set up**: Prepare your materials or goal clearly before beginning.\n` +
-    `2. **Start with the basics**: Take care of the initial groundwork step by step.\n` +
-    `3. **Execute**: Follow through with the core process, making sure each phase is completed.\n` +
-    `4. **Review**: Check your output to ensure everything looks correct.\n\n` +
-    `Let me know if you would like more details on any specific step!`
+    `Here is a straightforward step-by-step approach for ${topic || "your request"}:\n\n` +
+    `1. **Planning**: Clearly define your end goal and assemble the necessary tools or information.\n` +
+    `2. **Core Execution**: Focus on completing the primary action first without getting bogged down in minor details.\n` +
+    `3. **Testing & Refinement**: Review your progress, tweak anything that needs adjustment, and verify the final result.`
   );
 }
 
-function isCreativeWritingRequest(lowerText: string): boolean {
-  return (
-    lowerText.includes("write a story") ||
-    lowerText.includes("write a poem") ||
-    lowerText.includes("compose a") ||
-    lowerText.includes("write an essay") ||
-    lowerText.includes("write a song") ||
-    lowerText.includes("tell me a story") ||
-    lowerText.includes("create a poem") ||
-    lowerText.startsWith("write ")
-  );
-}
-
-function generateCreativeWriting(rawText: string): string {
-  const lower = rawText.toLowerCase();
-  if (lower.includes("poem")) {
+function handleCreativeQuery(lowerText: string): string {
+  if (lowerText.includes("poem")) {
     return (
-      `Soft whispers in the quiet night,\n` +
-      `A sudden spark of golden light.\n` +
-      `The world awakens, calm and clear,\n` +
-      `As peaceful moments draw so near.`
+      `Gentle breeze across the night,\n` +
+      `Stars that shine with steady light.\n` +
+      `Through the quiet, calm and deep,\n` +
+      `Peaceful dreams the shadows keep.`
     );
   }
-  
+
+  if (lowerText.includes("joke")) {
+    const jokes = [
+      "Why don't scientists trust atoms?\nBecause they make up everything!",
+      "Why did the JavaScript developer wear glasses?\nBecause they didn't C#!",
+      "Why don't programmers like nature?\nIt has too many bugs!",
+      "What do you call a fake noodle?\nAn impasta!"
+    ];
+    return jokes[Math.floor(Math.random() * jokes.length)];
+  }
+
+  if (lowerText.includes("email") || lowerText.includes("letter") || lowerText.includes("draft")) {
+    return (
+      `Subject: Quick Follow-up regarding our conversation\n\n` +
+      `Hi [Name],\n\n` +
+      `I hope you're having a great week!\n\n` +
+      `I am writing to follow up on our recent discussion and confirm the next steps. Please let me know if you have any questions or if you need any additional information from my side.\n\n` +
+      `Best regards,\n[Your Name]`
+    );
+  }
+
   return (
-    `Once upon a time in a quiet town nestled beside rolling green hills, an inquisitive traveler stumbled upon a hidden path. Following it past whispering trees and shimmering streams, they discovered a tranquil place where new ideas blossomed naturally.`
+    `Once upon a time in a quiet seaside town, a curious traveler discovered an old leather journal hidden inside a forgotten lighthouse. As they flipped through its worn pages, they unlocked a series of forgotten maps leading to extraordinary new adventures.`
   );
-}
-
-function isAmbiguousInput(text: string): boolean {
-  const trimmed = text.trim();
-  const lower = trimmed.toLowerCase();
-  
-  const ambiguousPhrases = [
-    "maybe", "stuff", "idk", "whatever", "thing", "something",
-    "do it", "sure", "okay", "yeah", "what now", "guess so", "guess"
-  ];
-
-  if (ambiguousPhrases.includes(lower)) return true;
-  if (trimmed.split(/\s+/).length === 1 && trimmed.length < 3 && !/^\d+$/.test(trimmed)) return true;
-
-  return false;
 }
 
 export function answerGeneralQuestion(userText: string): string | null {
@@ -214,86 +192,68 @@ export function answerGeneralQuestion(userText: string): string | null {
   const lower = raw.toLowerCase();
   const cleaned = cleanQuery(raw);
 
-  // 1. Check for ambiguous / vague input -> ask short clarifying question
-  if (isAmbiguousInput(raw)) {
-    return `Could you please clarify what you would like help with?`;
-  }
-
-  // 2. Check for explicit step-by-step help request
-  if (isHelpRequest(lower)) {
-    return generateStepByStepHelp(raw);
-  }
-
-  // 3. Creative writing request
-  if (isCreativeWritingRequest(lower)) {
-    return generateCreativeWriting(raw);
-  }
-
-  // 4. Knowledge Base Lookup
-  for (const item of KNOWLEDGE_BASE) {
-    for (const key of item.keys) {
-      if (fuzzyMatch(lower, key) || fuzzyMatch(cleaned, key)) {
-        return item.answer;
-      }
-    }
-    if (item.synonyms) {
-      for (const syn of item.synonyms) {
-        if (fuzzyMatch(lower, syn) || fuzzyMatch(cleaned, syn)) {
-          return item.answer;
-        }
-      }
-    }
-  }
-
-  // 5. Basic Greetings
-  if (/^(hi|hello|hey|heyy|greetings|good morning|good afternoon|good evening|whats up|sup|helloo)\b/i.test(cleaned)) {
+  // 1. Simple Greetings & Chitchat
+  if (/^(hi|hello|hey|heyy|greetings|good morning|good afternoon|good evening|whats up|sup|helloo)$/i.test(cleaned)) {
     return "Hello! How can I help you today?";
   }
 
-  if (cleaned.includes("how are you") || cleaned.includes("how do you do") || cleaned.includes("how r u")) {
-    return "I'm doing well, thank you! How can I help you today?";
+  if (cleaned.includes("how are you") || cleaned.includes("how do you do") || cleaned === "how r u") {
+    return "I'm doing great, thank you! How can I assist you today?";
   }
 
-  if (cleaned.includes("thank you") || cleaned.includes("thanks") || cleaned.includes("thx") || cleaned.includes("thnk u")) {
-    return "You're very welcome!";
+  if (cleaned.includes("thank you") || cleaned.includes("thanks") || cleaned === "thx") {
+    return "You're very welcome! Let me know if you need anything else.";
   }
 
-  // 6. Person questions ("who is ...")
-  if (/^(who|whos|whois)\s+(is|was|are|were)?\b/i.test(cleaned)) {
-    const subject = cleaned.replace(/^(who|whos|whois)\s+(is|was|are|were)?\s+/i, "").replace(/\?/g, "").trim();
-    if (subject) {
-      for (const item of KNOWLEDGE_BASE) {
-        for (const key of item.keys) {
-          if (fuzzyMatch(subject, key)) return item.answer;
-        }
-        if (item.synonyms) {
-          for (const syn of item.synonyms) {
-            if (fuzzyMatch(subject, syn)) return item.answer;
-          }
-        }
+  if (cleaned === "who are you" || cleaned === "what is your name" || cleaned === "what are you") {
+    return "I'm Nuvio, your AI assistant here to help you answer questions, write code, plan tasks, and solve problems.";
+  }
+
+  // 2. Creative Writing
+  if (
+    lower.includes("write a story") ||
+    lower.includes("write a poem") ||
+    lower.includes("tell me a joke") ||
+    lower.includes("tell a joke") ||
+    lower.includes("draft an email") ||
+    lower.includes("write an email") ||
+    lower.includes("write a song")
+  ) {
+    return handleCreativeQuery(lower);
+  }
+
+  // 3. How-to / Help Requests
+  if (
+    lower.startsWith("how to") ||
+    lower.startsWith("how do i") ||
+    lower.startsWith("how can i") ||
+    lower.includes("steps to") ||
+    lower.includes("help me cook") ||
+    lower.includes("help me code") ||
+    lower.includes("guide me through")
+  ) {
+    return handleHowToQuery(lower);
+  }
+
+  // 4. Knowledge Base Match
+  for (const entry of KNOWLEDGE_BASE) {
+    for (const tag of entry.tags) {
+      if (cleaned.includes(cleanQuery(tag)) || cleanQuery(tag).includes(cleaned)) {
+        return entry.answer;
       }
-      return `${subject.charAt(0).toUpperCase() + subject.slice(1)} is a notable person or figure. Could you specify which field or context you are referring to?`;
     }
   }
 
-  // 7. Factual questions ("what is ...")
-  if (/^(what|whats|whatis|wht|wat)\s+(is|are|was|were)?\b/i.test(cleaned)) {
-    const concept = cleaned.replace(/^(what|whats|whatis|wht|wat)\s+(is|are|was|were)?\s+/i, "").replace(/definition of\s+/i, "").replace(/\?/g, "").trim();
-    if (concept) {
-      for (const item of KNOWLEDGE_BASE) {
-        for (const key of item.keys) {
-          if (fuzzyMatch(concept, key)) return item.answer;
-        }
-        if (item.synonyms) {
-          for (const syn of item.synonyms) {
-            if (fuzzyMatch(concept, syn)) return item.answer;
-          }
-        }
-      }
-      return `${concept.charAt(0).toUpperCase() + concept.slice(1)} refers to a concept or topic in its respective domain. Let me know if you would like specific details!`;
-    }
+  // 5. Short/ambiguous word queries (e.g. "maybe", "idk", "stuff")
+  if (cleaned.length < 3 && !/^\d+$/.test(cleaned)) {
+    return "Could you please clarify what you'd like to know?";
   }
 
-  // 8. General conversational response
-  return `That is a good question regarding ${raw.replace(/\?/g, "")}. Let me know if you'd like to explore a specific part of it!`;
+  // 6. Natural conversational fallback
+  if (cleaned.startsWith("what is") || cleaned.startsWith("who is") || cleaned.startsWith("tell me about")) {
+    const topic = raw.replace(/^(what is|who is|tell me about|explain)\s+/i, "").replace(/\?/g, "").trim();
+    return `${topic.charAt(0).toUpperCase() + topic.slice(1)} is a fascinating topic! Could you specify what details or context you are most interested in?`;
+  }
+
+  return null;
 }

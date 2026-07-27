@@ -97,28 +97,9 @@ const Index = () => {
   const [newUsername, setNewUsername] = useState("Agent Alpha");
 
   const [aiModel, setAiModel] = useState("Nuvio GPT-4o Core");
-  const [responseLength, setResponseLength] = useState<"short" | "balanced" | "detailed">("balanced");
-  const [creativity, setCreativity] = useState(60);
-  const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(true);
-  const [isSaveHistoryEnabled, setIsSaveHistoryEnabled] = useState(true);
-  const [isMemoryEnabled, setIsMemoryEnabled] = useState(true);
 
   const [themeMode, setThemeMode] = useState<"dark" | "light" | "system">("dark");
-  const [accentColor, setAccentColor] = useState("#ffffff");
-  const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
-
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-
-  const [isDataCollectionEnabled, setIsDataCollectionEnabled] = useState(false);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-
-  const [appLanguage, setAppLanguage] = useState("English (US)");
-  const [aiLanguage, setAiLanguage] = useState("Auto-detect");
-
-  const [isHapticEnabled, setIsHapticEnabled] = useState(true);
-  const [voiceSelection, setVoiceSelection] = useState("Male Neural (US)");
-  const [defaultOpeningPage, setDefaultOpeningPage] = useState<"new-chat" | "recent-chats">("new-chat");
+  const [isVoiceMuted, setIsVoiceMuted] = useState(false);
 
   // --- Chat History State ---
   const [chats, setChats] = useState<Chat[]>([
@@ -146,7 +127,6 @@ const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<{ name: string; size: string } | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [isVoiceMuted, setIsVoiceMuted] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentSteps, setCurrentSteps] = useState<Step[]>([]);
   const [currentProducts, setCurrentProducts] = useState<any[]>([]);
@@ -177,7 +157,7 @@ const Index = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chats, activeChatId, currentSteps]);
 
-  // Initialize Speech Recognition
+  // Speech Recognition
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -283,7 +263,7 @@ const Index = () => {
       {
         id: `sys-${Date.now()}`,
         sender: "vertex",
-        text: `Got it! I will adapt my style accordingly.`,
+        text: `Got it! I will adapt my responses to match your custom personality instructions.`,
         timestamp: new Date(),
       },
     ]);
@@ -386,18 +366,18 @@ const Index = () => {
     }
 
     if (category === "doc_analysis") {
-      return `I have analyzed "${selectedDoc?.name || "the file"}". Key points:\n1. Extracted key sections and notes.\n2. Summarized main findings.`;
+      return `I have analyzed "${selectedDoc?.name || "the file"}". Key points:\n1. Summary of primary content.\n2. Key details and structure identified.`;
     }
 
     if (category === "image_analysis") {
-      return "I have analyzed your image and extracted the main visual details.";
+      return "I have analyzed your image and extracted its main visual features.";
     }
 
     if (category === "pizza") {
       return "Domino's Pepperoni Pizza is available for $12.99 with coupon code '50OFF'. Estimated delivery is 20-30 minutes.";
     }
 
-    return "Could you tell me a bit more about what you would like to know?";
+    return `That's an interesting point about "${userText.trim()}". Could you share a bit more context so I can give you the best answer?`;
   };
 
   const simulateStreamingResponse = (
@@ -414,7 +394,7 @@ const Index = () => {
 
     let currentStepIndex = 0;
     const isGeneration = category === "image_generation" || category === "video_generation";
-    const stepDelay = isGeneration ? 25 : 150;
+    const stepDelay = isGeneration ? 25 : 120;
 
     const runNextStep = () => {
       if (currentStepIndex < stepsList.length) {
@@ -534,21 +514,21 @@ const Index = () => {
     setSelectedDoc(null);
 
     const isMath = evaluateMathExpression(text) !== null;
-    const isGeneralQuestion = answerGeneralQuestion(text) !== null;
+    const generalAns = answerGeneralQuestion(text);
 
     if (isMath) {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Calculating result", status: "pending", log: "Evaluating expression..." },
+          { id: "1", title: "Evaluating expression", status: "pending", log: "Performing calculation..." },
         ],
         "math"
       );
-    } else if (isGeneralQuestion) {
+    } else if (generalAns !== null) {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Formulating response", status: "pending", log: "Processing answer..." },
+          { id: "1", title: "Formulating answer", status: "pending", log: "Retrieving response..." },
         ],
         "general"
       );
@@ -631,7 +611,7 @@ const Index = () => {
       simulateStreamingResponse(
         text,
         [
-          { id: "1", title: "Processing message", status: "pending", log: "Preparing answer..." },
+          { id: "1", title: "Processing request", status: "pending", log: "Preparing answer..." },
         ],
         "default"
       );
