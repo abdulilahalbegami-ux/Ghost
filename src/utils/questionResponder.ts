@@ -2,15 +2,10 @@
  * Natural Conversational & Knowledge Engine for Nuvio
  *
  * Core Identity: Nuvio
- * Rules:
- * - Direct, accurate, natural, and helpful responses.
- * - Dynamic context-based responses without canned templates or memorized examples.
- * - Simple step-by-step guidance for requests for help.
- * - Original creative content when requested.
- * - Clean code generation with brief explanations.
- * - Short clarifying questions when input is vague.
- * - Respectful, adaptable, and professional tone.
+ * Includes Long-Term Memory retrieval.
  */
+
+import { queryLongTermMemory } from "@/utils/memoryStore";
 
 function cleanQuery(text: string): string {
   return text
@@ -29,7 +24,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   // Nuvio Identity
   {
     tags: ["who are you", "what is your name", "who made you", "what are you", "tell me about yourself", "your name"],
-    answer: "I'm Nuvio, an AI assistant here to help you answer questions, write code, plan tasks, brainstorm ideas, and solve problems. What can I help you with today?",
+    answer: "I'm Nuvio, an AI assistant equipped with long-term memory. I can answer questions, write code, plan tasks, remember your preferences, and help you solve complex problems. What can I help you with today?",
   },
 
   // Superheroes & Pop Culture
@@ -193,12 +188,18 @@ export function answerGeneralQuestion(userText: string): string | null {
   const lower = raw.toLowerCase();
   const cleaned = cleanQuery(raw);
 
-  // 1. Clarifying questions for vague input
+  // 1. Long-Term Memory Lookup
+  const memoryAnswer = queryLongTermMemory(userText);
+  if (memoryAnswer) {
+    return memoryAnswer;
+  }
+
+  // 2. Clarifying questions for vague input
   if (isAmbiguous(raw)) {
     return "Could you please clarify what you would like assistance with?";
   }
 
-  // 2. Greetings and Chitchat
+  // 3. Greetings and Chitchat
   if (/^(hi|hello|hey|heyy|greetings|good morning|good afternoon|good evening|whats up|sup|helloo)$/i.test(cleaned)) {
     return "Hello! How can I help you today?";
   }
@@ -211,7 +212,7 @@ export function answerGeneralQuestion(userText: string): string | null {
     return "You're very welcome! Let me know if there's anything else you need.";
   }
 
-  // 3. Creative Writing Requests
+  // 4. Creative Writing Requests
   if (
     lower.includes("write a story") ||
     lower.includes("write a poem") ||
@@ -224,7 +225,7 @@ export function answerGeneralQuestion(userText: string): string | null {
     return handleCreativeQuery(lower);
   }
 
-  // 4. How-to & Guided Help
+  // 5. How-to & Guided Help
   if (
     lower.startsWith("how to") ||
     lower.startsWith("how do i") ||
@@ -237,7 +238,7 @@ export function answerGeneralQuestion(userText: string): string | null {
     return handleHowToQuery(lower);
   }
 
-  // 5. Knowledge Base Lookups
+  // 6. Knowledge Base Lookups
   for (const entry of KNOWLEDGE_BASE) {
     for (const tag of entry.tags) {
       if (cleaned.includes(cleanQuery(tag)) || cleanQuery(tag).includes(cleaned)) {
@@ -246,7 +247,7 @@ export function answerGeneralQuestion(userText: string): string | null {
     }
   }
 
-  // 6. Direct Factual / Person Inquiries
+  // 7. Direct Factual / Person Inquiries
   if (cleaned.startsWith("who is") || cleaned.startsWith("whos")) {
     const person = raw.replace(/^(who is|whos)\s+/i, "").replace(/\?/g, "").trim();
     if (person) {
@@ -261,6 +262,6 @@ export function answerGeneralQuestion(userText: string): string | null {
     }
   }
 
-  // 7. Conversational Fallback
+  // 8. Conversational Fallback
   return `I understand you are asking about "${raw.replace(/\?/g, "")}". Could you share a bit more detail so I can give you the most accurate answer?`;
 }

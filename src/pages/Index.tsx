@@ -47,6 +47,7 @@ import GeneratedVideo from "@/components/GeneratedVideo";
 import { showSuccess, showError } from "@/utils/toast";
 import { evaluateMathExpression } from "@/utils/mathEvaluator";
 import { answerGeneralQuestion } from "@/utils/questionResponder";
+import { extractMemoryFromUserText } from "@/utils/memoryStore";
 
 interface Message {
   id: string;
@@ -481,6 +482,14 @@ const Index = () => {
     if ((!text.trim() && !selectedImage && !selectedDoc) || isStreaming) return;
 
     const lowerText = text.toLowerCase();
+
+    // Check & Extract Autonomous Long-Term Memory
+    if (text.trim()) {
+      const extracted = extractMemoryFromUserText(text);
+      if (extracted) {
+        showSuccess(`Nuvio saved a new long-term memory: "${extracted.content}"`);
+      }
+    }
 
     if ((lowerText.includes("video") || lowerText.includes("animate") || lowerText.includes("movie") || lowerText.includes("film")) && !isLoggedIn) {
       setAuthMode("signin");

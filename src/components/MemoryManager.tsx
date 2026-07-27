@@ -1,85 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Brain, Trash2, Plus, Shield, Search, Tag, AlertCircle, Network } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
-
-interface Memory {
-  id: string;
-  category: string;
-  content: string;
-  importance: "high" | "medium" | "low";
-  dateAdded: string;
-  tags: string[];
-}
+import {
+  getStoredMemories,
+  addLongTermMemory,
+  deleteLongTermMemory,
+  isAutonomousLearningEnabled,
+  setAutonomousLearningEnabled,
+  MemoryItem,
+} from "@/utils/memoryStore";
 
 export const MemoryManager = () => {
-  const [memories, setMemories] = useState<Memory[]>([
-    {
-      id: "1",
-      category: "Food",
-      content: "Prefers pepperoni pizza from local pizzerias.",
-      importance: "medium",
-      dateAdded: "2025-02-15",
-      tags: ["pizza", "dinner", "preferences"],
-    },
-    {
-      id: "2",
-      category: "Schedule",
-      content: "Prefers appointments after 5:00 PM on weekdays.",
-      importance: "high",
-      dateAdded: "2025-02-14",
-      tags: ["calendar", "work", "availability"],
-    },
-    {
-      id: "3",
-      category: "Budget",
-      content: "Always looks for the cheapest flight and hotel options.",
-      importance: "high",
-      dateAdded: "2025-02-12",
-      tags: ["travel", "finance", "savings"],
-    },
-    {
-      id: "4",
-      category: "Tone",
-      content: "Prefers professional and concise email drafts.",
-      importance: "low",
-      dateAdded: "2025-02-10",
-      tags: ["writing", "email", "style"],
-    },
-  ]);
-
+  const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newImportance, setNewImportance] = useState<"high" | "medium" | "low">("medium");
   const [newTags, setNewTags] = useState("");
-  const [isLearningEnabled, setIsLearningEnabled] = useState(true);
+  const [isLearningEnabled, setIsLearning] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "graph">("list");
+
+  const reloadMemories = () => {
+    setMemories(getStoredMemories());
+    setIsLearning(isAutonomousLearningEnabled());
+  };
+
+  useEffect(() => {
+    reloadMemories();
+    const handleUpdate = () => reloadMemories();
+    window.addEventListener("nuvio_memory_updated", handleUpdate);
+    return () => window.removeEventListener("nuvio_memory_updated", handleUpdate);
+  }, []);
 
   const handleAddMemory = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategory || !newContent) return;
+    if (!newCategory.trim() || !newContent.trim()) return;
 
-    const newMemory: Memory = {
-      id: Date.now().toString(),
-      category: newCategory,
-      content: newContent,
-      importance: newImportance,
-      dateAdded: new Date().toISOString().split("T")[0],
-      tags: newTags ? newTags.split(",").map((t) => t.trim().toLowerCase()) : [],
-    };
+    const tagsArr = newTags ? newTags.split(",").map((t) => t.trim()) : [];
+    addLongTermMemory(newCategory, newContent, newImportance, tagsArr);
 
-    setMemories([newMemory, ...memories]);
     setNewCategory("");
     setNewContent("");
     setNewTags("");
-    showSuccess("Nuvio updated its memory core.");
+    showSuccess("Saved to Nuvio's Long-Term Memory Core.");
   };
 
   const handleDeleteMemory = (id: string) => {
-    setMemories(memories.filter((m) => m.id !== id));
-    showSuccess("Memory forgotten successfully.");
+    deleteLongTermMemory(id);
+    showSuccess("Memory erased from long-term store.");
+  };
+
+  const handleToggleLearning = () => {
+    const nextState = !isLearningEnabled;
+    setAutonomousLearningEnabled(nextState);
+    setIsLearning(nextState);
+    showSuccess(nextState ? "Autonomous memory core active." : "Autonomous memory learning paused.");
   };
 
   const filteredMemories = memories.filter(
@@ -96,7 +73,7 @@ export const MemoryManager = () => {
           <Brain className="w-5 h-5 text-indigo-500 animate-pulse" />
           <div>
             <h2 className="text-lg font-semibold tracking-wider uppercase">Nuvio Memory Core</h2>
-            <p className="text-[10px] text-zinc-400 dark:text-white/40">Semantic knowledge graph & user preferences</p>
+            <p className="text-[10px] text-zinc-400 dark:text-white/40">Persistent knowledge graph & user preferences</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -123,10 +100,7 @@ export const MemoryManager = () => {
             </button>
           </div>
           <button
-            onClick={() => {
-              setIsLearningEnabled(!isLearningEnabled);
-              showSuccess(isLearningEnabled ? "Autonomous learning paused." : "Autonomous learning active.");
-            }}
+            onClick={handleToggleLearning}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all ${
               isLearningEnabled
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-black border-transparent"
@@ -143,22 +117,22 @@ export const MemoryManager = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-3 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Memory Health</p>
-            <p className="text-base font-bold font-mono">98.4%</p>
+            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Memory Integrity</p>
+            <p className="text-base font-bold font-mono">100% Synced</p>
           </div>
           <AlertCircle className="w-5 h-5 text-emerald-500" />
         </div>
         <div className="p-3 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Total Nodes</p>
+            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Stored Nodes</p>
             <p className="text-base font-bold font-mono">{memories.length} Active</p>
           </div>
           <Network className="w-5 h-5 text-indigo-500" />
         </div>
         <div className="p-3 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Last Synced</p>
-            <p className="text-xs font-bold font-mono">Just now</p>
+            <p className="text-[10px] text-zinc-400 dark:text-white/40 uppercase font-bold">Persistence</p>
+            <p className="text-xs font-bold font-mono text-emerald-500">Local Storage Active</p>
           </div>
           <Brain className="w-5 h-5 text-amber-500" />
         </div>
@@ -184,7 +158,7 @@ export const MemoryManager = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input
                   type="text"
-                  placeholder="Category (e.g. Travel)"
+                  placeholder="Category (e.g. Preferences)"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   className="bg-white dark:bg-black border border-zinc-200 dark:border-white/20 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none"
@@ -229,56 +203,60 @@ export const MemoryManager = () => {
                 type="submit"
                 className="w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90 font-medium py-2 rounded-lg text-xs transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-4 h-4" /> Commit to Memory
+                <Plus className="w-4 h-4" /> Commit to Long-Term Memory
               </button>
             </form>
           </div>
 
           {/* Memory List */}
-          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-            {filteredMemories.map((memory) => (
-              <div
-                key={memory.id}
-                className="flex items-start justify-between p-3 bg-white dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 transition-all group"
-              >
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-block px-2 py-0.5 bg-zinc-100 dark:bg-white/10 text-[9px] font-bold uppercase tracking-wider rounded text-zinc-600 dark:text-white/80">
-                      {memory.category}
-                    </span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                        memory.importance === "high"
-                          ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
-                          : memory.importance === "medium"
-                          ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                          : "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"
-                      }`}
-                    >
-                      {memory.importance}
-                    </span>
-                    <span className="text-[9px] text-zinc-400 dark:text-white/30 font-mono">{memory.dateAdded}</span>
-                  </div>
-                  <p className="text-xs md:text-sm text-zinc-800 dark:text-white/90">{memory.content}</p>
-                  {memory.tags.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <Tag className="w-3 h-3 text-zinc-400" />
-                      {memory.tags.map((tag, idx) => (
-                        <span key={idx} className="text-[9px] text-zinc-500 dark:text-white/50 bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => handleDeleteMemory(memory.id)}
-                  className="text-zinc-400 hover:text-red-500 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+          <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+            {filteredMemories.length === 0 ? (
+              <p className="text-center text-xs text-zinc-400 dark:text-white/40 py-6">No memories match your query.</p>
+            ) : (
+              filteredMemories.map((memory) => (
+                <div
+                  key={memory.id}
+                  className="flex items-start justify-between p-3 bg-white dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 transition-all group"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-block px-2 py-0.5 bg-zinc-100 dark:bg-white/10 text-[9px] font-bold uppercase tracking-wider rounded text-zinc-600 dark:text-white/80">
+                        {memory.category}
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                          memory.importance === "high"
+                            ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                            : memory.importance === "medium"
+                            ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                            : "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"
+                        }`}
+                      >
+                        {memory.importance}
+                      </span>
+                      <span className="text-[9px] text-zinc-400 dark:text-white/30 font-mono">{memory.dateAdded}</span>
+                    </div>
+                    <p className="text-xs md:text-sm text-zinc-800 dark:text-white/90">{memory.content}</p>
+                    {memory.tags.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Tag className="w-3 h-3 text-zinc-400" />
+                        {memory.tags.map((tag, idx) => (
+                          <span key={idx} className="text-[9px] text-zinc-500 dark:text-white/50 bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleDeleteMemory(memory.id)}
+                    className="text-zinc-400 hover:text-red-500 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </>
       ) : (
@@ -293,7 +271,7 @@ export const MemoryManager = () => {
 
             {/* Connected Nodes */}
             {memories.map((m, idx) => {
-              const angle = (idx / memories.length) * 2 * Math.PI;
+              const angle = (idx / Math.max(memories.length, 1)) * 2 * Math.PI;
               const radius = 80;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
@@ -313,7 +291,7 @@ export const MemoryManager = () => {
             })}
           </div>
           <p className="absolute bottom-3 text-[9px] text-zinc-400 dark:text-white/30 uppercase tracking-wider font-bold">
-            Interactive Semantic Link Map
+            Interactive Long-Term Semantic Link Map
           </p>
         </div>
       )}
