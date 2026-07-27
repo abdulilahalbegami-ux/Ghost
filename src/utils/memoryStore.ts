@@ -14,7 +14,7 @@ const DEFAULT_MEMORIES: MemoryItem[] = [
   {
     id: "mem-1",
     category: "Preferences",
-    content: "Prefers pepperoni pizza from local pizzerias.",
+    content: "Favorite pizza: pepperoni pizza from local pizzerias",
     importance: "medium",
     dateAdded: new Date().toISOString().split("T")[0],
     tags: ["pizza", "dinner", "food", "preferences"],
@@ -22,7 +22,7 @@ const DEFAULT_MEMORIES: MemoryItem[] = [
   {
     id: "mem-2",
     category: "Schedule",
-    content: "Prefers appointments after 5:00 PM on weekdays.",
+    content: "Prefers appointments after 5:00 PM on weekdays",
     importance: "high",
     dateAdded: new Date().toISOString().split("T")[0],
     tags: ["calendar", "work", "availability"],
@@ -30,18 +30,10 @@ const DEFAULT_MEMORIES: MemoryItem[] = [
   {
     id: "mem-3",
     category: "Travel",
-    content: "Always looks for the cheapest flight and hotel options.",
+    content: "Prefers budget flights and highly-rated hostels",
     importance: "high",
     dateAdded: new Date().toISOString().split("T")[0],
     tags: ["travel", "finance", "budget"],
-  },
-  {
-    id: "mem-4",
-    category: "Style",
-    content: "Prefers concise, professional responses with code snippets when applicable.",
-    importance: "low",
-    dateAdded: new Date().toISOString().split("T")[0],
-    tags: ["writing", "style", "formatting"],
   },
 ];
 
@@ -107,14 +99,13 @@ export function deleteLongTermMemory(id: string): void {
 /**
  * Automatically extracts memories from user sentences like:
  * "Remember that my dog's name is Max"
- * "My favorite food is sushi"
+ * "My favorite color is green"
  * "I live in Chicago"
  */
 export function extractMemoryFromUserText(userText: string): MemoryItem | null {
   if (!isAutonomousLearningEnabled()) return null;
 
   const text = userText.trim();
-  const lower = text.toLowerCase();
 
   // Explicit instruction: "Remember that..." or "Remember..."
   const rememberMatch = text.match(/remember\s+(that\s+)?(.+)/i);
@@ -140,7 +131,7 @@ export function extractMemoryFromUserText(userText: string): MemoryItem | null {
   if (myMatch) {
     const key = myMatch[1].trim();
     const val = myMatch[2].trim();
-    if (!["name", "question", "issue", "problem"].includes(key.toLowerCase())) {
+    if (!["name", "question", "issue", "problem", "favorite"].includes(key.toLowerCase())) {
       const content = `${key.charAt(0).toUpperCase() + key.slice(1)}: ${val}`;
       return addLongTermMemory("User Profile", content, "medium", [key, "profile"]);
     }
@@ -163,8 +154,45 @@ function extractTagsFromText(text: string): string[] {
 }
 
 /**
- * Searches stored memories for relevant context to answer queries like:
- * "What is my favorite food?" or "Do you remember my dog's name?"
+ * Converts stored raw facts into clean, natural English.
+ * e.g. "Favorite color: green" -> "Your favorite color is green."
+ */
+function formatMemoryContentNaturally(content: string): string {
+  const clean = content.trim();
+
+  // Handle "Favorite [thing]: [value]"
+  const favMatch = clean.match(/^favorite\s+([a-z0-9\s]+):\s*(.+)$/i);
+  if (favMatch) {
+    const topic = favMatch[1].trim();
+    const val = favMatch[2].trim().replace(/\.$/, "");
+    return `Your favorite ${topic} is ${val}.`;
+  }
+
+  // Handle "Lives in [location]"
+  const liveMatch = clean.match(/^lives\s+in\s+(.+)$/i);
+  if (liveMatch) {
+    return `You live in ${liveMatch[1].trim().replace(/\.$/, "")}.`;
+  }
+
+  // Handle "Key: Value" e.g. "Dog: Max" or "Job: Software Engineer"
+  const keyValMatch = clean.match(/^([a-z0-9\s]{2,20}):\s*(.+)$/i);
+  if (keyValMatch) {
+    const key = keyValMatch[1].trim();
+    const val = keyValMatch[2].trim().replace(/\.$/, "");
+    return `Your ${key.toLowerCase()} is ${val}.`;
+  }
+
+  // Handle "Prefers [something]"
+  if (clean.toLowerCase().startsWith("prefers ")) {
+    return `You prefer ${clean.slice(8).trim().replace(/\.$/, "")}.`;
+  }
+
+  // Fallback to conversational statement
+  return clean.endsWith(".") ? clean : `${clean}.`;
+}
+
+/**
+ * Searches stored memories for relevant context to answer queries naturally.
  */
 export function queryLongTermMemory(userText: string): string | null {
   const memories = getStoredMemories();
@@ -172,7 +200,6 @@ export function queryLongTermMemory(userText: string): string | null {
 
   const lower = userText.toLowerCase();
 
-  // Check if asking about stored facts
   const isAskingAboutSelf =
     lower.includes("my favorite") ||
     lower.includes("do you remember") ||
@@ -195,7 +222,10 @@ export function queryLongTermMemory(userText: string): string | null {
     const catLower = memory.category.toLowerCase();
 
     for (const word of searchWords) {
-      if (["what", "is", "my", "do", "you", "remember", "where", "about"].includes(word)) continue;
+      if (["what", "is", "my", "do", "you", "remember", "where", "about", "color", "favorite"].includes(word)) {
+        if (memLower.includes(word)) score += 2;
+        continue;
+      }
       if (memLower.includes(word)) score += 3;
       if (catLower.includes(word)) score += 2;
       if (memory.tags.some((t) => t.includes(word))) score += 4;
@@ -207,8 +237,8 @@ export function queryLongTermMemory(userText: string): string | null {
     }
   }
 
-  if (bestMatch && maxScore >= 3) {
-    return `Based on my long-term memory: ${bestMatch.content}`;
+  if (bestMatch && maxScore >= 2) {
+    return formatMemoryContentNaturally(bestMatch.content);
   }
 
   return null;
